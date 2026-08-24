@@ -8,4 +8,5 @@ coverage/
 !.env.example
 bulk_photo/*
 !bulk_photo/README.md
+.vite/
 

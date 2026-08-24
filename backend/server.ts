@@ -11,14 +11,30 @@ import crypto from "crypto";
 import os from "os";
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
+
+export const getBulkPhotoDir = (subPath = "") => {
+  const base = process.env.VERCEL === "1" ? os.tmpdir() : process.cwd();
+  return path.join(base, "bulk_photo", subPath);
+};
 
 app.use(express.json({ limit: "50mb" }));
-app.use("/bulk_photo", express.static(path.join(process.cwd(), "bulk_photo")));
+
+app.use("/bulk_photo", (req, res, next) => {
+  const targetPath = getBulkPhotoDir(req.path);
+  if (fs.existsSync(targetPath) && fs.statSync(targetPath).isFile()) {
+    return res.sendFile(targetPath);
+  }
+  const rootPath = path.join(process.cwd(), "bulk_photo", req.path);
+  if (fs.existsSync(rootPath) && fs.statSync(rootPath).isFile()) {
+    return res.sendFile(rootPath);
+  }
+  next();
+});
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const dest = path.join(process.cwd(), "bulk_photo");
+    const dest = getBulkPhotoDir();
     if (!fs.existsSync(dest)) {
       fs.mkdirSync(dest, { recursive: true });
     }
@@ -153,7 +169,7 @@ app.post("/api/create-event", async (req, res) => {
   }
 
   try {
-    const eventDir = path.join(process.cwd(), "bulk_photo", eventId);
+    const eventDir = getBulkPhotoDir(eventId);
     if (!fs.existsSync(eventDir)) {
       fs.mkdirSync(eventDir, { recursive: true });
     }
@@ -162,7 +178,7 @@ app.post("/api/create-event", async (req, res) => {
 
     if (folderId === 'local_upload') {
       // Process local uploaded files synchronously
-      const rootDir = path.join(process.cwd(), "bulk_photo");
+      const rootDir = getBulkPhotoDir();
       const rootFiles = fs.readdirSync(rootDir);
 
       for (const file of rootFiles) {
@@ -406,7 +422,7 @@ app.get("/api/events", (req, res) => {
 app.delete("/api/events/:eventId", (req, res) => {
   const { eventId } = req.params;
   if (events[eventId]) {
-    const eventDir = path.join(process.cwd(), "bulk_photo", eventId);
+    const eventDir = getBulkPhotoDir(eventId);
     if (fs.existsSync(eventDir)) {
       fs.rmSync(eventDir, { recursive: true, force: true });
     }
@@ -425,12 +441,12 @@ app.post("/api/events/:eventId/upload", upload.array("photos"), (req, res) => {
   }
 
   try {
-    const eventDir = path.join(process.cwd(), "bulk_photo", eventId);
+    const eventDir = getBulkPhotoDir(eventId);
     if (!fs.existsSync(eventDir)) {
       fs.mkdirSync(eventDir, { recursive: true });
     }
 
-    const rootDir = path.join(process.cwd(), "bulk_photo");
+    const rootDir = getBulkPhotoDir();
     const files = fs.readdirSync(rootDir);
     const addedPhotos: string[] = [];
 
@@ -467,7 +483,7 @@ app.post("/api/events/:eventId/clear", (req, res) => {
   }
 
   try {
-    const eventDir = path.join(process.cwd(), "bulk_photo", eventId);
+    const eventDir = getBulkPhotoDir(eventId);
     if (fs.existsSync(eventDir)) {
       const files = fs.readdirSync(eventDir);
       for (const file of files) {
@@ -481,8 +497,6 @@ app.post("/api/events/:eventId/clear", (req, res) => {
   }
 });
 
-
-
 app.post("/api/upload-photos", upload.array("photos"), (req, res) => {
   try {
     const fileCount = req.files ? (req.files as Express.Multer.File[]).length : 0;
@@ -494,7 +508,7 @@ app.post("/api/upload-photos", upload.array("photos"), (req, res) => {
 
 app.post("/api/clear-photos", (req, res) => {
   try {
-    const bulkPhotoDir = path.join(process.cwd(), "bulk_photo");
+    const bulkPhotoDir = getBulkPhotoDir();
     if (fs.existsSync(bulkPhotoDir)) {
       const files = fs.readdirSync(bulkPhotoDir);
       let count = 0;
@@ -763,10 +777,10 @@ app.post("/api/scan-faces", rateLimiter, async (req, res) => {
 
     if (event.folderId === 'local_upload') {
       // For local upload events, scan from the local event directory directly
-      scanBulkDir = path.join(process.cwd(), "bulk_photo", eventId);
+      scanBulkDir = getBulkPhotoDir(eventId);
     } else {
       // For Google Drive events, download scaled thumbnails directly to cached event directory
-      scanBulkDir = path.join(process.cwd(), "bulk_photo", eventId);
+      scanBulkDir = getBulkPhotoDir(eventId);
       if (!fs.existsSync(scanBulkDir)) {
         fs.mkdirSync(scanBulkDir, { recursive: true });
       }
@@ -943,4 +957,8 @@ async function startServer() {
   });
 }
 
-startServer();
+if (!process.env.VERCEL) {
+  startServer();
+}
+
+export default app;
