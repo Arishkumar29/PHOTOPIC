@@ -7,9 +7,6 @@ export interface DriveEntry {
   name: string;
 }
 
-/**
- * Scrapes metadata of public Google Drive folders.
- */
 export async function scrapeDriveFolderEntries(folderId: string): Promise<DriveEntry[]> {
   const url = `https://drive.google.com/embeddedfolderview?id=${folderId}`;
   console.log(`Scraping public Google Drive folder metadata: ${folderId}`);
@@ -45,9 +42,6 @@ export async function scrapeDriveFolderEntries(folderId: string): Promise<DriveE
   return driveFiles;
 }
 
-/**
- * Downloads files from a Drive folder into a target directory in parallel batches.
- */
 export async function downloadDriveFiles(targetFiles: DriveEntry[], eventDir: string): Promise<string[]> {
   const downloadedPhotos: string[] = [];
   const batchSize = 6;
@@ -107,9 +101,6 @@ export async function downloadDriveFiles(targetFiles: DriveEntry[], eventDir: st
   return downloadedPhotos;
 }
 
-/**
- * Proxies Google Drive image content.
- */
 export async function proxyDriveFileContent(fileId: string): Promise<{ buffer: Buffer; contentType: string }> {
   const downloadUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
   const fileRes = await fetch(downloadUrl, {

@@ -27,7 +27,7 @@ app.use("/bulk_photo", (req, res, next) => {
   next();
 });
 
-// Register modular API routes
+// Register API routes
 app.use("/api", eventRoutes);
 app.use("/api", analyticsRoutes);
 app.use("/api", scanRoutes);

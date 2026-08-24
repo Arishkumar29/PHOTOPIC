@@ -8,12 +8,9 @@ export interface ScanMatch {
   path?: string;
 }
 
-/**
- * Spawns python face scanning subprocess as fallback handler.
- */
 export function runPythonScan(selfiePath: string, bulkDirPath: string): Promise<any> {
   return new Promise((resolve, reject) => {
-    const scriptPath = path.join(process.cwd(), "backend", "scripts", "scan_faces.py");
+    const scriptPath = path.join(process.cwd(), "api", "scripts", "scan_faces.py");
     const pythonProcess = spawn("python", [scriptPath, selfiePath, bulkDirPath]);
 
     let stdoutData = "";
@@ -46,9 +43,6 @@ export function runPythonScan(selfiePath: string, bulkDirPath: string): Promise<
   });
 }
 
-/**
- * Calls Gemini API for a single chunk of image files.
- */
 async function callGeminiApiNode(
   model: string,
   apiKey: string,
@@ -164,9 +158,6 @@ async function processChunkWithModelFallbackNode(
   throw lastError || new Error("All model candidates failed");
 }
 
-/**
- * Scans faces using direct Gemini Node API calls in parallel batches.
- */
 export async function scanFacesWithGeminiNode(
   apiKey: string,
   selfieMime: string,
