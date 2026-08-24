@@ -1,0 +1,126 @@
+@import "tailwindcss";
+
+.grid-bg-subtle {
+  background-image: 
+    linear-gradient(to right, rgba(148, 163, 184, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.grid-bg-accent {
+  background-image: 
+    linear-gradient(to right, rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+  background-size: 120px 120px;
+}
+
+.grid-bg-mask-top {
+  -webkit-mask-image: radial-gradient(circle 800px at 50% -200px, black 30%, transparent 80%);
+  mask-image: radial-gradient(circle 800px at 50% -200px, black 30%, transparent 80%);
+}
+
+.grid-bg-mask-bottom {
+  -webkit-mask-image: radial-gradient(circle 1000px at 50% 120%, black 20%, transparent 80%);
+  mask-image: radial-gradient(circle 1000px at 50% 120%, black 20%, transparent 80%);
+}
+
+/* Custom dark mode variant for Tailwind v4 custom rules if needed */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --color-bg-cutout: #ffffff;
+}
+.dark {
+  --color-bg-cutout: #18181b; /* zinc-900 */
+}
+
+.active-cutout {
+  position: relative;
+  background-color: var(--color-bg-cutout);
+}
+.active-cutout::before {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: -20px;
+  width: 20px;
+  height: 20px;
+  background-color: transparent;
+  border-bottom-right-radius: 20px;
+  box-shadow: 10px 10px 0 0 var(--color-bg-cutout);
+  pointer-events: none;
+}
+.active-cutout::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: -20px;
+  width: 20px;
+  height: 20px;
+  background-color: transparent;
+  border-top-right-radius: 20px;
+  box-shadow: 10px -10px 0 0 var(--color-bg-cutout);
+  pointer-events: none;
+}
+
+/* Custom premium hover animations */
+@keyframes shine-sweep {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 200%;
+  }
+}
+
+.hover-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.hover-shine::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-25deg);
+  pointer-events: none;
+  transition: none;
+}
+
+.hover-shine:hover::after {
+  animation: shine-sweep 0.85s ease-in-out;
+}
+
+.glow-btn-primary {
+  box-shadow: 0 4px 20px -2px rgba(59, 130, 246, 0.15);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.glow-btn-primary:hover {
+  box-shadow: 0 10px 30px -4px rgba(59, 130, 246, 0.35);
+}
+
+.glow-btn-dark {
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.12);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.glow-btn-dark:hover {
+  box-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.25);
+}
+
+.dark .glow-btn-dark {
+  box-shadow: 0 4px 20px -2px rgba(255, 255, 255, 0.05);
+}
+.dark .glow-btn-dark:hover {
+  box-shadow: 0 10px 30px -4px rgba(255, 255, 255, 0.12);
+}
+
+
