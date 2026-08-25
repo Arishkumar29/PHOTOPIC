@@ -419,14 +419,8 @@ export function Organizer({ initialView = 'dashboard', onOpenPublicView }) {
 
             {/* Recent galleries — rounded-[1.75rem] cards matching LandingPage card style */}
             <div className="space-y-5">
-              <div className="flex justify-between items-center">
+              <div>
                 <h3 className="text-2xl font-medium tracking-tight">Recent Galleries</h3>
-                <button 
-                  onClick={() => setViewMode('create')}
-                  className="text-sm font-semibold text-slate-500 dark:text-zinc-400 hover:opacity-60 transition-opacity"
-                >
-                  + Create new
-                </button>
               </div>
               
               {events.length === 0 ? (

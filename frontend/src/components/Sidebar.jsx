@@ -1,6 +1,5 @@
 import { Home, FolderHeart, PlusCircle, QrCode, BarChart3, Settings } from 'lucide-react';
 import { Logo } from './Logo';
-import { ThemeToggle } from './ThemeToggle';
 import { motion } from 'motion/react';
 
 export function Sidebar({ activeTab, setActiveTab, mobileMenuOpen, setMobileMenuOpen }) {
@@ -60,14 +59,6 @@ export function Sidebar({ activeTab, setActiveTab, mobileMenuOpen, setMobileMenu
             );
           })}
         </nav>
-      </div>
-      
-      {/* Bottom */}
-      <div className="flex flex-col gap-3 px-1">
-        <div className="flex items-center justify-between px-2 py-1">
-          <span className="text-xs font-semibold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">Theme</span>
-          <ThemeToggle />
-        </div>
       </div>
     </aside>
   );
