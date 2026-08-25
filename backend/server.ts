@@ -71,8 +71,20 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
+  const server = app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);
+  });
+
+  server.on("error", (err: any) => {
+    if (err.code === "EADDRINUSE") {
+      const fallbackPort = Number(PORT) + 1;
+      console.warn(`Port ${PORT} is in use. Retrying on port ${fallbackPort}...`);
+      app.listen(fallbackPort, "0.0.0.0", () => {
+        console.log(`Server running on http://localhost:${fallbackPort}`);
+      });
+    } else {
+      console.error("Server startup error:", err);
+    }
   });
 }
 
