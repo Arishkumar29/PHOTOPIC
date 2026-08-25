@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Camera, Download, RefreshCcw, ScanFace, X, ChevronLeft, ChevronRight, Search, Sliders, Undo, Eye } from 'lucide-react';
+import { Camera, Download, RefreshCcw, ScanFace, X, ChevronLeft, ChevronRight, Search, Sliders, Undo, Eye, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Logo } from '../components/Logo';
 import { ThemeToggle } from '../components/ThemeToggle';
