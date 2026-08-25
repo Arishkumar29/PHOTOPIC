@@ -351,28 +351,25 @@ export function Organizer({ initialView = 'dashboard', onOpenPublicView }) {
             exit={{ opacity: 0, y: -15 }}
             className="space-y-8"
           >
-            {/* Welcome banner — matches landing page dark panel (Features section style) */}
-            <div className="bg-slate-900 dark:bg-zinc-900/60 backdrop-blur-md border border-slate-800 dark:border-zinc-800/60 text-white rounded-[1.75rem] sm:rounded-[2.5rem] p-8 sm:p-12 relative overflow-hidden">
-              {/* Scattered icon background — matches lime CTA band */}
-              <div className="absolute inset-0 pointer-events-none grid grid-cols-8 grid-rows-3 gap-8 opacity-[0.06] p-8">
-                {[...Array(24)].map((_, i) => (
-                  <div key={i} className="w-8 h-8 flex items-center justify-center">
-                    {i % 3 === 0 ? <Camera className="w-full h-full text-white"/> : i % 3 === 1 ? <Zap className="w-full h-full text-white"/> : <Lock className="w-full h-full text-white"/>}
-                  </div>
-                ))}
-              </div>
-              <div className="relative z-10 max-w-xl">
-                <div className="text-xs font-semibold tracking-widest uppercase text-slate-400 mb-4">Organizer Dashboard</div>
-                <h2 className="text-3xl sm:text-5xl font-medium tracking-tight leading-[1.05] text-white mb-4">
-                  Welcome back, <span className="font-serif italic text-slate-400">{user?.displayName || 'photographer'}.</span>
+            {/* Welcome banner — bright, modern glassmorphic hero without dark black background */}
+            <div className="bg-gradient-to-br from-purple-50/80 via-white to-orange-50/60 dark:from-zinc-900 dark:via-zinc-900/90 dark:to-zinc-850 border border-purple-100 dark:border-zinc-800/80 rounded-[2rem] sm:rounded-[2.5rem] p-8 sm:p-12 relative overflow-hidden shadow-sm">
+              {/* Soft ambient gradient orb in top-right */}
+              <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-[#6e2b8b]/10 to-[#da7756]/10 rounded-full blur-3xl pointer-events-none" />
+              
+              <div className="relative z-10 max-w-2xl">
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-purple-100/70 dark:bg-purple-950/50 text-[#6e2b8b] dark:text-[#da7756] text-xs font-bold uppercase tracking-wider mb-4 border border-purple-200/60 dark:border-purple-800/40 select-none">
+                  <Sparkles className="w-3.5 h-3.5 text-[#da7756]" /> Organizer Dashboard
+                </div>
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight leading-[1.1] text-slate-900 dark:text-zinc-50 mb-3">
+                  Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6e2b8b] to-[#da7756] font-serif italic">{user?.displayName || 'Admin'}.</span>
                 </h2>
-                <p className="text-slate-400 font-medium leading-relaxed">
-                  Upload galleries to Google Drive, index photos with neural FaceSync, and share with guests.
+                <p className="text-slate-600 dark:text-zinc-400 font-medium text-sm sm:text-base leading-relaxed">
+                  Upload galleries to Google Drive, index photos with high-accuracy SFace AI, and share QR codes with guests.
                 </p>
               </div>
             </div>
 
-            {/* Stats grid — large rounded cards, font-medium labels */}
+            {/* Stats grid — clean cards with soft purple accent border */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               {[
                 { label: 'Total Events', val: events.length },
@@ -386,10 +383,10 @@ export function Organizer({ initialView = 'dashboard', onOpenPublicView }) {
                   initial={{ opacity: 0, y: 20 }}
                   viewport={{ once: true, margin: '-50px' }}
                   transition={{ type: 'spring', bounce: 0.3 }}
-                  className="bg-slate-50 dark:bg-zinc-900/40 border border-slate-100 dark:border-zinc-800/40 p-6 rounded-[1.75rem] flex flex-col justify-between min-h-[120px] hover:shadow-lg transition-shadow"
+                  className="bg-white dark:bg-zinc-900/50 border border-purple-100/70 dark:border-zinc-800/80 p-6 rounded-[1.75rem] flex flex-col justify-between min-h-[120px] hover:shadow-md transition-all hover:border-[#6e2b8b]/30"
                 >
-                  <span className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-zinc-400">{stat.label}</span>
-                  <span className="text-3xl font-medium tracking-tight text-slate-900 dark:text-zinc-50 mt-2">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-zinc-400">{stat.label}</span>
+                  <span className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-zinc-50 mt-2">
                     <CountUp end={stat.val} />
                   </span>
                 </motion.div>
