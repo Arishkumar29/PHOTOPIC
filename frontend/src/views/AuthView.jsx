@@ -138,7 +138,7 @@ export function AuthView({ onLoginSuccess }) {
       </div>
 
       {/* RIGHT: Visual Area — Welcoming Mascot Character with Clean White Background */}
-      <div className="hidden md:flex flex-1 bg-gradient-to-br from-purple-50/80 via-white to-orange-50/60 dark:from-zinc-900 dark:via-zinc-900/90 dark:to-zinc-850 relative overflow-hidden items-center justify-center p-8 border-l border-slate-100 dark:border-zinc-800">
+      <div className="hidden md:flex flex-1 bg-gradient-to-br from-purple-50/80 via-white to-orange-50/60 dark:from-zinc-900 dark:via-zinc-900/90 dark:to-zinc-850 relative overflow-hidden items-center justify-center p-6 lg:p-12 border-l border-slate-100 dark:border-zinc-800">
         {/* Soft ambient brand pastel blur */}
         <div className="absolute -top-24 -left-24 w-96 h-96 bg-[#6e2b8b]/10 dark:bg-[#6e2b8b]/20 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-[#da7756]/10 dark:bg-[#da7756]/15 rounded-full blur-3xl pointer-events-none" />
@@ -148,27 +148,18 @@ export function AuthView({ onLoginSuccess }) {
           initial={{ opacity: 0, scale: 0.92, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.7, type: 'spring', bounce: 0.25 }}
-          className="relative z-10 flex flex-col items-center text-center max-w-sm"
+          className="relative z-10 flex flex-col items-center justify-center w-full max-w-lg"
         >
-          {/* High-res Mascot character image */}
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-b from-[#6e2b8b]/15 to-[#da7756]/15 rounded-full blur-2xl transform scale-90 -z-10" />
+          {/* Prominent, Large High-res Mascot character image */}
+          <div className="relative w-full flex items-center justify-center">
+            <div className="absolute inset-0 bg-gradient-to-b from-[#6e2b8b]/15 to-[#da7756]/15 rounded-full blur-3xl transform scale-95 -z-10" />
             <motion.img 
               src="/welcome_mascot.png" 
-              alt="Welcome Mascot" 
-              animate={{ y: [0, -8, 0] }}
+              alt="GWC Mascot" 
+              animate={{ y: [0, -10, 0] }}
               transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-              className="w-64 sm:w-72 md:w-80 max-h-[420px] h-auto object-contain drop-shadow-[0_15px_25px_rgba(110,43,139,0.15)] select-none pointer-events-none"
+              className="w-full max-w-[340px] lg:max-w-[420px] xl:max-w-[480px] max-h-[82vh] h-auto object-contain drop-shadow-[0_20px_35px_rgba(110,43,139,0.16)] select-none pointer-events-none"
             />
-          </div>
-
-          <div className="mt-4 space-y-1.5">
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-zinc-50">
-              Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6e2b8b] to-[#da7756]">GWC PhotoSync</span>
-            </h2>
-            <p className="text-slate-600 dark:text-zinc-400 text-xs sm:text-sm font-medium leading-relaxed max-w-xs">
-              AI-Powered Facial Recognition &amp; Instant Event Photo Discovery
-            </p>
           </div>
         </motion.div>
       </div>
