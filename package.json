@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "npx tsx backend/server.ts",
-    "build": "npx vite build && npx esbuild backend/server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
+    "build": "npx vite build --config frontend/vite.config.js && npx esbuild backend/server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
     "start": "node dist/server.cjs",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",

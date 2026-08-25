@@ -1,5 +1,0 @@
-{
-  "name": "Photopic",
-  "description": "Privacy-first photo filtering system using SFace + OpenCV facial recognition.",
-  "requestFramePermissions": ["camera"]
-}
