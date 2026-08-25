@@ -88,8 +88,8 @@ export function AuthView({ onLoginSuccess }) {
           >
             {/* Heading */}
             <div className="mb-10">
-              <div className="w-12 h-12 rounded-2xl bg-slate-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center mb-6 shadow-md">
-                <ShieldCheck className="w-6 h-6" />
+              <div className="mb-6">
+                <Logo size="lg" />
               </div>
               <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-slate-900 dark:text-zinc-50 mb-2">
                 Admin Sign In
