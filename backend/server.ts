@@ -35,8 +35,8 @@ app.use("/api", scanRoutes);
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
-      root: path.join(process.cwd(), "frontend2", "photopic"),
-      configFile: path.join(process.cwd(), "frontend2", "photopic", "vite.config.js"),
+      root: path.join(process.cwd(), "frontend"),
+      configFile: path.join(process.cwd(), "frontend", "vite.config.js"),
       server: { middlewareMode: true },
       appType: "custom",
     });
@@ -45,7 +45,7 @@ async function startServer() {
     app.get("*", async (req, res, next) => {
       const url = req.originalUrl;
       try {
-        const indexPath = path.join(process.cwd(), "frontend2", "photopic", "index.html");
+        const indexPath = path.join(process.cwd(), "frontend", "index.html");
         if (!fs.existsSync(indexPath)) {
           return res.status(404).send("index.html not found");
         }

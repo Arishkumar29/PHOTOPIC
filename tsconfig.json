@@ -17,7 +17,7 @@
     "jsx": "react-jsx",
     "paths": {
       "@/*": [
-        "./frontend2/photopic/*"
+        "./frontend/*"
       ]
     },
     "allowImportingTsExtensions": true,
