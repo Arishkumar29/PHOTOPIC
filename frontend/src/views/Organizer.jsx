@@ -351,12 +351,12 @@ export function Organizer({ initialView = 'dashboard', onOpenPublicView }) {
             exit={{ opacity: 0, y: -15 }}
             className="space-y-8"
           >
-            {/* Welcome banner — bright, modern glassmorphic hero without dark black background */}
-            <div className="bg-gradient-to-br from-purple-50/80 via-white to-orange-50/60 dark:from-zinc-900 dark:via-zinc-900/90 dark:to-zinc-850 border border-purple-100 dark:border-zinc-800/80 rounded-[2rem] sm:rounded-[2.5rem] p-8 sm:p-12 relative overflow-hidden shadow-sm">
+            {/* Welcome banner — bright, modern glassmorphic hero with welcoming mascot in the right empty space */}
+            <div className="bg-gradient-to-br from-purple-50/80 via-white to-orange-50/60 dark:from-zinc-900 dark:via-zinc-900/90 dark:to-zinc-850 border border-purple-100 dark:border-zinc-800/80 rounded-[2rem] sm:rounded-[2.5rem] p-8 sm:p-10 md:p-12 relative overflow-hidden shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
               {/* Soft ambient gradient orb in top-right */}
               <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-[#6e2b8b]/10 to-[#da7756]/10 rounded-full blur-3xl pointer-events-none" />
               
-              <div className="relative z-10 max-w-2xl">
+              <div className="relative z-10 max-w-xl">
                 <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-purple-100/70 dark:bg-purple-950/50 text-[#6e2b8b] dark:text-[#da7756] text-xs font-bold uppercase tracking-wider mb-4 border border-purple-200/60 dark:border-purple-800/40 select-none">
                   <Sparkles className="w-3.5 h-3.5 text-[#da7756]" /> Organizer Dashboard
                 </div>
@@ -366,6 +366,17 @@ export function Organizer({ initialView = 'dashboard', onOpenPublicView }) {
                 <p className="text-slate-600 dark:text-zinc-400 font-medium text-sm sm:text-base leading-relaxed">
                   Upload galleries to Google Drive, index photos with high-accuracy SFace AI, and share QR codes with guests.
                 </p>
+              </div>
+
+              {/* Right Mascot Graphic */}
+              <div className="relative z-10 shrink-0 hidden sm:flex items-center justify-center -my-6 sm:-my-8 md:-my-10 -mr-2 sm:-mr-4 md:-mr-6">
+                <motion.img 
+                  src="/welcome_mascot.png" 
+                  alt="GWC Mascot" 
+                  animate={{ y: [0, -6, 0] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                  className="w-40 sm:w-48 md:w-56 lg:w-64 max-h-[220px] md:max-h-[260px] h-auto object-contain drop-shadow-[0_15px_30px_rgba(110,43,139,0.18)] select-none pointer-events-none"
+                />
               </div>
             </div>
 
