@@ -10,7 +10,7 @@ export function Sidebar({ activeTab, setActiveTab, mobileMenuOpen, setMobileMenu
   const handleLogout = async () => {
     try {
       await logout();
-      setActiveTab('landing');
+      setActiveTab('auth');
       setMobileMenuOpen(false);
     } catch (e) {
       console.error(e);
@@ -75,20 +75,31 @@ export function Sidebar({ activeTab, setActiveTab, mobileMenuOpen, setMobileMenu
         </nav>
       </div>
       
-      {/* Bottom: ThemeToggle + Logout */}
+      {/* Bottom: Admin Profile + ThemeToggle + Logout */}
       <div className="flex flex-col gap-3 px-1">
+        {/* Admin profile pill */}
+        <div className="flex items-center gap-3 p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-200/60 dark:border-zinc-800/60">
+          <div className="w-8 h-8 rounded-full bg-slate-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center font-bold text-xs uppercase shadow-sm shrink-0">
+            A
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold text-slate-900 dark:text-zinc-100 truncate">Admin Organizer</p>
+            <p className="text-[10px] text-slate-400 dark:text-zinc-500 truncate">admin@photopic.app</p>
+          </div>
+        </div>
+
         {/* Theme toggle row */}
         <div className="flex items-center justify-between px-2 py-1">
           <span className="text-xs font-semibold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">Theme</span>
           <ThemeToggle />
         </div>
 
-        <div className="border-t border-slate-100 dark:border-zinc-800/40 pt-3">
+        <div className="border-t border-slate-100 dark:border-zinc-800/40 pt-2">
           <button 
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold transition-opacity text-sm text-slate-500 dark:text-zinc-400 hover:opacity-60 text-left"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold transition-all text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 text-left cursor-pointer"
           >
-            <LogOut className="w-4 h-4 shrink-0 opacity-50" />
+            <LogOut className="w-4 h-4 shrink-0" />
             Logout
           </button>
         </div>

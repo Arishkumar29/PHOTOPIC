@@ -177,6 +177,13 @@ export default function App() {
           <Logo onClick={() => setActiveTab('organizer')} />
           <div className="flex items-center gap-3">
             <ThemeToggle />
+            <button 
+              onClick={() => handleLogout()}
+              className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200/50 dark:border-red-900/40"
+              title="Logout"
+            >
+              Logout
+            </button>
             <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 text-slate-500 dark:text-zinc-400 hover:opacity-60 transition-opacity rounded-lg">
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
