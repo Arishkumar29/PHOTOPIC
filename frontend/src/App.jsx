@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Organizer } from './views/Organizer';
-import { LandingPage } from './views/LandingPage';
 import { PublicGallery } from './views/PublicGallery';
 import { AuthView } from './views/AuthView';
 import { Settings } from './views/Settings';
@@ -15,11 +14,18 @@ import { PageTransition } from './components/PageTransition';
 import { GridBackground } from './components/GridBackground';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('landing');
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [publicData, setPublicData] = useState(null);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
   const { user, logout } = useAuth();
+  const [activeTab, setActiveTab] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('event') ? 'public' : (user ? 'organizer' : 'auth');
+  });
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [publicData, setPublicData] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    const eventId = params.get('event');
+    return eventId ? { eventId, orgName: 'Event Guest', eventName: 'Photo Gallery' } : null;
+  });
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -27,23 +33,19 @@ export default function App() {
     if (eventId) {
       setPublicData({ eventId, orgName: 'Event Guest', eventName: 'Photo Gallery' });
       setActiveTab('public');
+    } else {
+      if (!user) {
+        setActiveTab('auth');
+      } else if (activeTab === 'auth') {
+        setActiveTab('organizer');
+      }
     }
-  }, []);
-
-  // Route Guard
-  useEffect(() => {
-    if (activeTab === 'organizer' && !user) {
-      setActiveTab('auth');
-    }
-    if (activeTab === 'auth' && user) {
-      setActiveTab('organizer');
-    }
-  }, [activeTab, user]);
+  }, [user]);
 
   const handleLogout = async () => {
     try {
       await logout();
-      setActiveTab('landing');
+      setActiveTab('auth');
     } catch (e) {
       console.error(e);
     }
@@ -120,45 +122,45 @@ export default function App() {
 
   const getDashboardTitle = () => {
     switch (activeTab) {
-      case 'organizer': return 'Home';
+      case 'organizer': return 'Dashboard';
       case 'events': return 'My Events';
       case 'create_event': return 'Create Event';
-      case 'one_qr': return 'One QR';
+      case 'one_qr': return 'QR Code Portal';
       case 'analytics': return 'Analytics';
       case 'settings': return 'Settings';
-      default: return 'Home';
+      default: return 'Admin Dashboard';
     }
   };
 
   const renderView = () => {
-    if (activeTab === 'landing') {
-      return (
-        <PageTransition key="landing" className="w-full relative z-10">
-          <LandingPage onStart={() => setActiveTab(user ? 'organizer' : 'auth')} />
-        </PageTransition>
-      );
-    }
-
-    if (activeTab === 'auth') {
-      return (
-        <PageTransition key="auth" className="w-full min-h-screen relative z-10 bg-transparent">
-          <AuthView onBack={() => setActiveTab('landing')} onLoginSuccess={() => setActiveTab('organizer')} />
-        </PageTransition>
-      );
-    }
-
+    // Guest QR & Selfie Portal
     if (activeTab === 'public') {
       return (
         <PageTransition key="public" className="w-full relative z-10 min-h-screen bg-transparent">
-          <PublicGallery eventData={publicData} onBack={() => {
-            window.history.replaceState({}, '', '/');
-            setActiveTab('landing');
-          }} />
+          <PublicGallery 
+            eventData={publicData} 
+            onBack={() => {
+              if (user) {
+                setActiveTab('organizer');
+              } else {
+                setActiveTab('auth');
+              }
+            }} 
+          />
         </PageTransition>
       );
     }
 
-    // Dashboard Shell
+    // Admin Login
+    if (activeTab === 'auth' || !user) {
+      return (
+        <PageTransition key="auth" className="w-full min-h-screen relative z-10 bg-transparent">
+          <AuthView onLoginSuccess={() => setActiveTab('organizer')} />
+        </PageTransition>
+      );
+    }
+
+    // Admin Dashboard Shell
     return (
       <PageTransition key="dashboard" className="w-full min-h-screen bg-transparent text-slate-900 dark:text-zinc-50 font-sans flex flex-col md:flex-row selection:bg-slate-200 relative z-10">
         
@@ -172,7 +174,7 @@ export default function App() {
 
         {/* Mobile Header */}
         <div className="md:hidden bg-white/80 dark:bg-zinc-900/60 backdrop-blur-xl border-b border-slate-100 dark:border-zinc-800/40 h-16 px-6 flex items-center justify-between sticky top-0 z-40">
-          <Logo onClick={() => setActiveTab('landing')} />
+          <Logo onClick={() => setActiveTab('organizer')} />
           <div className="flex items-center gap-3">
             <ThemeToggle />
             <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 text-slate-500 dark:text-zinc-400 hover:opacity-60 transition-opacity rounded-lg">
@@ -183,30 +185,25 @@ export default function App() {
 
         {/* Main Content Area */}
         <main id="content-container" className="flex-1 bg-white dark:bg-zinc-950 overflow-y-auto border-t md:border-t-0 md:border-l border-slate-100 dark:border-zinc-800/40 relative z-20">
-          {/* Dashboard Header — mirrors landing nav style */}
           <header className="hidden md:flex bg-white/80 dark:bg-zinc-900/60 backdrop-blur-xl h-16 items-center px-10 sticky top-0 z-10 justify-between border-b border-slate-100 dark:border-zinc-800/40">
-            <h1 className="text-base font-medium tracking-tight text-slate-900 dark:text-zinc-50">
+            <h1 className="text-base font-semibold tracking-tight text-slate-900 dark:text-zinc-50">
               {getDashboardTitle()}
             </h1>
             <div className="flex items-center gap-6">
               <ThemeToggle />
 
-              {/* User avatar/name dropdown — soft hover:opacity style */}
+              {/* Admin Profile dropdown */}
               <div className="relative">
                 <button 
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                   className="flex items-center gap-3 cursor-pointer focus:outline-none hover:opacity-70 transition-opacity"
                 >
                   <span className="text-sm font-semibold text-slate-900 dark:text-zinc-100">
-                    {user?.displayName || 'Organizer'}
+                    {user?.displayName || 'Admin'}
                   </span>
-                  {user?.photoURL ? (
-                    <img src={user.photoURL} alt="Profile" className="w-8 h-8 rounded-full border border-slate-200 dark:border-zinc-800" />
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-slate-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center font-bold text-xs uppercase">
-                      {user?.displayName ? user.displayName[0] : 'O'}
-                    </div>
-                  )}
+                  <div className="w-8 h-8 rounded-full bg-slate-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center font-bold text-xs uppercase shadow-sm">
+                    {user?.displayName ? user.displayName[0] : 'A'}
+                  </div>
                 </button>
                 
                 <AnimatePresence>
@@ -217,7 +214,7 @@ export default function App() {
                         initial={{ opacity: 0, y: 10, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }}
+                        transition={{ type: 'spring', bounce: 0.2, duration: 0.3 }}
                         className="absolute right-0 mt-3 w-44 bg-white dark:bg-zinc-900/90 backdrop-blur-xl border border-slate-100 dark:border-zinc-800/60 rounded-2xl shadow-xl py-2 z-40 text-left"
                       >
                         <button 
@@ -246,7 +243,6 @@ export default function App() {
           </div>
         </main>
         
-        {/* Mobile overlay */}
         {mobileMenuOpen && (
           <div 
             className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-40 md:hidden"
@@ -258,15 +254,13 @@ export default function App() {
   };
 
   return (
-    <>
-      <div className="min-h-screen font-sans selection:bg-slate-200 bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-50 relative overflow-hidden flex w-full">
-        <GridBackground />
-        <div className="relative z-10 w-full flex flex-col">
-          <AnimatePresence mode="wait">
-            {renderView()}
-          </AnimatePresence>
-        </div>
+    <div className="min-h-screen font-sans selection:bg-slate-200 bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-50 relative overflow-hidden flex w-full">
+      <GridBackground />
+      <div className="relative z-10 w-full flex flex-col">
+        <AnimatePresence mode="wait">
+          {renderView()}
+        </AnimatePresence>
       </div>
-    </>
+    </div>
   );
 }

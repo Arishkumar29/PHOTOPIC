@@ -1,17 +1,14 @@
 import path from "path";
 import fs from "fs";
 import os from "os";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 export const getProjectRootDir = (): string => {
   const cwd = process.cwd();
   if (fs.existsSync(path.join(cwd, "backend")) && fs.existsSync(path.join(cwd, "frontend"))) {
     return cwd;
   }
-  return path.resolve(__dirname, "..", "..");
+  const currentDir = typeof __dirname !== "undefined" ? __dirname : process.cwd();
+  return path.resolve(currentDir, "..", "..");
 };
 
 export const getBulkPhotoDir = (subPath: string = ""): string => {
