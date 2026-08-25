@@ -6,6 +6,7 @@ import { Logo } from '../components/Logo';
 import { ThemeToggle } from '../components/ThemeToggle';
 
 export function PublicGallery({ eventData, onBack }) {
+  const [currentEvent, setCurrentEvent] = useState(eventData);
   const [stream, setStream] = useState(null);
   const [photo, setPhoto] = useState(null);
   const [isScanning, setIsScanning] = useState(false);
@@ -13,6 +14,7 @@ export function PublicGallery({ eventData, onBack }) {
   const [scanError, setScanError] = useState(null);
   const [lightboxIndex, setLightboxIndex] = useState(null);
   const videoRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   // Photo editing state variables
   const [isEditing, setIsEditing] = useState(false);
@@ -26,13 +28,30 @@ export function PublicGallery({ eventData, onBack }) {
   const [activePreset, setActivePreset] = useState('original');
   const [isDownloading, setIsDownloading] = useState(false);
 
-  // Auto track visits to backend
+  // Load active event if not supplied in props
   useEffect(() => {
-    if (eventData?.id) {
-      fetch(`/api/events/${eventData.id}/track-visit`, { method: 'POST' })
-        .catch(err => console.error("Failed to track visit", err));
+    if (eventData?.eventId) {
+      setCurrentEvent(eventData);
+    } else {
+      fetch('/api/events')
+        .then(res => res.json())
+        .then(data => {
+          if (data.events && data.events.length > 0) {
+            setCurrentEvent(data.events[0]);
+          }
+        })
+        .catch(console.error);
     }
   }, [eventData]);
+
+  // Auto track visits to backend
+  useEffect(() => {
+    const id = currentEvent?.eventId || eventData?.eventId;
+    if (id) {
+      fetch(`/api/events/${id}/track-visit`, { method: 'POST' })
+        .catch(err => console.error("Failed to track visit", err));
+    }
+  }, [currentEvent, eventData]);
 
   // CSS Filter string compiler
   const getFilterString = () => {
@@ -47,8 +66,9 @@ export function PublicGallery({ eventData, onBack }) {
   const handleDownload = async (url) => {
     setIsDownloading(true);
     try {
-      if (eventData?.id) {
-        await fetch(`/api/events/${eventData.id}/track-download`, { method: 'POST' }).catch(() => {});
+      const id = currentEvent?.eventId || eventData?.eventId;
+      if (id) {
+        await fetch(`/api/events/${id}/track-download`, { method: 'POST' }).catch(() => {});
       }
 
       const response = await fetch(url);
@@ -77,7 +97,7 @@ export function PublicGallery({ eventData, onBack }) {
                 const blobUrl = URL.createObjectURL(editedBlob);
                 const a = document.createElement('a');
                 a.href = blobUrl;
-                a.download = `potopic_${eventData?.id || 'event'}_edited.jpg`;
+                a.download = `photopic_${id || 'event'}_edited.jpg`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
@@ -91,7 +111,7 @@ export function PublicGallery({ eventData, onBack }) {
         const blobUrl = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = blobUrl;
-        a.download = `potopic_${eventData?.id || 'event'}_photo.jpg`;
+        a.download = `photopic_${id || 'event'}_photo.jpg`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -119,58 +139,84 @@ export function PublicGallery({ eventData, onBack }) {
     };
   }, [stream]);
 
+  const stopCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      setStream(null);
+    }
+  };
+
   const startCamera = async () => {
     try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        fileInputRef.current?.click();
+        return;
+      }
       const mediaStream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'user' } 
+        video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } } 
       });
       setStream(mediaStream);
       setPhoto(null);
       setMatchedPhotos(null);
       setScanError(null);
     } catch (err) {
-      console.error('Camera error:', err);
-      setScanError('Failed to access camera. Please ensure permissions are granted.');
+      console.warn('Camera access unavailable, opening upload picker fallback:', err);
+      if (fileInputRef.current) {
+        fileInputRef.current.click();
+      } else {
+        setScanError('Camera is unavailable. Please click below to upload your selfie photo.');
+      }
     }
+  };
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const photoDataUrl = reader.result;
+      setPhoto(photoDataUrl);
+      stopCamera();
+      findMyPhotos(photoDataUrl);
+    };
+    reader.readAsDataURL(file);
   };
 
   const capturePhoto = () => {
     if (!videoRef.current) return;
     const videoElement = videoRef.current;
     const canvas = document.createElement('canvas');
-    canvas.width = videoElement.videoWidth;
-    canvas.height = videoElement.videoHeight;
-    canvas.getContext('2d').drawImage(videoElement, 0, 0);
-    const photoDataUrl = canvas.toDataURL('image/jpeg');
-    setPhoto(photoDataUrl);
-    
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop());
-      setStream(null);
+    canvas.width = videoElement.videoWidth || 640;
+    canvas.height = videoElement.videoHeight || 480;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+      const photoDataUrl = canvas.toDataURL('image/jpeg', 0.95);
+      setPhoto(photoDataUrl);
+      stopCamera();
+      findMyPhotos(photoDataUrl);
     }
-    
-    findMyPhotos(photoDataUrl);
   };
 
   const findMyPhotos = async (photoDataUrl) => {
     setIsScanning(true);
     setScanError(null);
+    const activeEventId = currentEvent?.eventId || eventData?.eventId || 'evt_sample';
     try {
       const response = await fetch('/api/scan-faces', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          eventId: eventData.eventId,
+          eventId: activeEventId,
           referenceImage: photoDataUrl
         })
       });
       
+      const data = await response.json();
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to scan photos');
+        throw new Error(data.error || 'Failed to scan photos');
       }
       
-      const data = await response.json();
       setMatchedPhotos(data.matches || []);
     } catch (err) {
       console.error(err);
@@ -205,8 +251,10 @@ export function PublicGallery({ eventData, onBack }) {
     }
   };
 
+  const activeEvent = currentEvent || eventData;
+
   // Invalid event — fun & warm card
-  if (!eventData?.eventId) {
+  if (!activeEvent?.eventId) {
     return (
       <div className="min-h-screen bg-white dark:bg-zinc-950 font-sans flex items-center justify-center p-6">
         <motion.div
@@ -279,6 +327,15 @@ export function PublicGallery({ eventData, onBack }) {
               }
             `}} />
 
+            {/* Hidden file input for direct photo upload */}
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              onChange={handleFileUpload} 
+              accept="image/*" 
+              className="hidden" 
+            />
+
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center mt-6 md:mt-16 max-w-6xl mx-auto text-left">
               {/* Left Column: CTA */}
               <div className="lg:col-span-6 text-center lg:text-left space-y-6 md:space-y-8">
@@ -291,16 +348,25 @@ export function PublicGallery({ eventData, onBack }) {
                   Find your photos <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6e2b8b] to-[#da7756] font-serif italic">in seconds.</span>
                 </h1>
                 <p className="text-slate-500 dark:text-zinc-400 text-base sm:text-lg font-medium leading-relaxed max-w-lg">
-                  Take a quick selfie and let our AI scan the event gallery to find every photo you appear in.
+                  Take a quick selfie or upload a photo, and let our AI scan the event gallery to find every picture you appear in.
                 </p>
                 
-                <button 
-                  onClick={startCamera}
-                  className="group relative overflow-hidden bg-gradient-to-r from-[#6e2b8b] to-[#da7756] text-white font-extrabold text-lg px-10 py-5 rounded-full hover:opacity-95 shadow-xl shadow-purple-950/25 hover:scale-[1.03] active:scale-95 transition-all duration-300 flex items-center justify-center gap-3 mx-auto lg:mx-0 cursor-pointer"
-                >
-                  <Camera className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
-                  <span>Take Selfie</span>
-                </button>
+                <div className="flex flex-col sm:flex-row items-center gap-3 justify-center lg:justify-start">
+                  <button 
+                    onClick={startCamera}
+                    className="w-full sm:w-auto group relative overflow-hidden bg-gradient-to-r from-[#6e2b8b] to-[#da7756] text-white font-extrabold text-base sm:text-lg px-8 sm:px-10 py-4 sm:py-5 rounded-full hover:opacity-95 shadow-xl shadow-purple-950/25 hover:scale-[1.03] active:scale-95 transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer"
+                  >
+                    <Camera className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
+                    <span>Take Selfie</span>
+                  </button>
+
+                  <button 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full sm:w-auto bg-white dark:bg-zinc-800/80 hover:bg-slate-50 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-100 font-bold text-sm sm:text-base px-6 py-4 sm:py-5 rounded-full border border-slate-200 dark:border-zinc-700 shadow-md hover:scale-[1.02] active:scale-95 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <span>Upload Photo</span>
+                  </button>
+                </div>
               </div>
 
               {/* Right Column: 3D Mascot Superhero AI Showcase */}
@@ -344,6 +410,15 @@ export function PublicGallery({ eventData, onBack }) {
             className="max-w-md mx-auto"
           >
             <div className="bg-gradient-to-br from-purple-50/90 via-white to-orange-50/60 dark:from-zinc-900 dark:via-zinc-900/90 dark:to-zinc-850 rounded-[2.5rem] p-4 shadow-xl border border-purple-100 dark:border-zinc-800 relative overflow-hidden">
+              {/* Close / cancel camera button */}
+              <button 
+                onClick={stopCamera}
+                className="absolute top-6 right-6 z-40 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white backdrop-blur-md transition-colors cursor-pointer"
+                title="Close Camera"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
               <div className="aspect-[3/4] rounded-[2rem] overflow-hidden bg-slate-900 relative shadow-inner">
                 <video 
                   id="camera-preview"
@@ -389,7 +464,7 @@ export function PublicGallery({ eventData, onBack }) {
               </div>
               
               {/* Capture button */}
-              <div className="absolute bottom-8 left-0 right-0 flex justify-center">
+              <div className="absolute bottom-8 left-0 right-0 flex flex-col items-center justify-center gap-2">
                 <button 
                   onClick={capturePhoto}
                   className="w-18 h-18 bg-white rounded-full border-4 border-[#6e2b8b]/30 shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-transform cursor-pointer"
@@ -399,7 +474,15 @@ export function PublicGallery({ eventData, onBack }) {
                 </button>
               </div>
             </div>
-            <p className="text-center text-slate-500 dark:text-zinc-400 font-medium mt-6">Position your face clearly in the frame.</p>
+            <div className="flex items-center justify-center gap-4 mt-4">
+              <p className="text-center text-slate-500 dark:text-zinc-400 font-medium text-xs">Position your face clearly in the frame</p>
+              <button 
+                onClick={() => fileInputRef.current?.click()} 
+                className="text-xs font-semibold text-[#6e2b8b] dark:text-[#da7756] hover:underline cursor-pointer"
+              >
+                Upload photo instead
+              </button>
+            </div>
           </motion.div>
         )}
 

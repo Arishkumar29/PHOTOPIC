@@ -42,13 +42,21 @@ export const scanFaces = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Missing required parameters: eventId or referenceImage" });
     }
 
-    const event = events[eventId];
+    let event = events[eventId];
+    if (!event) {
+      const allEvents = Object.keys(events);
+      if (allEvents.length > 0) {
+        event = events[allEvents[0]];
+      }
+    }
+
     if (!event) {
       return res.status(404).json({ error: "Event not found or expired. Organizer must re-sync the folder." });
     }
 
-    initAnalytics(eventId);
-    eventAnalytics[eventId].faceScans += 1;
+    const resolvedEventId = event.eventId || eventId;
+    initAnalytics(resolvedEventId);
+    eventAnalytics[resolvedEventId].faceScans += 1;
 
     const matches = referenceImage.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
     if (!matches || matches.length !== 3) {
