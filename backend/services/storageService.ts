@@ -3,12 +3,16 @@ import fs from "fs";
 import os from "os";
 
 export const getProjectRootDir = (): string => {
-  const cwd = process.cwd();
-  if (fs.existsSync(path.join(cwd, "backend")) && fs.existsSync(path.join(cwd, "frontend"))) {
-    return cwd;
+  let dir = process.cwd();
+  for (let i = 0; i < 5; i++) {
+    if (fs.existsSync(path.join(dir, "frontend")) && fs.existsSync(path.join(dir, "backend"))) {
+      return dir;
+    }
+    const parent = path.dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
   }
-  const currentDir = typeof __dirname !== "undefined" ? __dirname : process.cwd();
-  return path.resolve(currentDir, "..", "..");
+  return process.cwd();
 };
 
 export const getBulkPhotoDir = (subPath: string = ""): string => {
