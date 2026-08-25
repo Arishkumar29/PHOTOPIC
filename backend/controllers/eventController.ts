@@ -17,13 +17,14 @@ export interface EventData {
 
 export const events: Record<string, EventData> = {};
 
-const DB_FILE = path.join(process.cwd(), "bulk_photo", "events_db.json");
+const getDbFilePath = () => path.join(getBulkPhotoDir(), "events_db.json");
 
 function saveEventsToDisk() {
   try {
-    const dir = path.dirname(DB_FILE);
+    const dbPath = getDbFilePath();
+    const dir = path.dirname(dbPath);
     ensureDirExists(dir);
-    fs.writeFileSync(DB_FILE, JSON.stringify(events, null, 2));
+    fs.writeFileSync(dbPath, JSON.stringify(events, null, 2));
   } catch (err) {
     console.error("Failed to save events to disk:", err);
   }
@@ -31,8 +32,9 @@ function saveEventsToDisk() {
 
 function loadEventsFromDisk() {
   try {
-    if (fs.existsSync(DB_FILE)) {
-      const data = fs.readFileSync(DB_FILE, "utf-8");
+    const dbPath = getDbFilePath();
+    if (fs.existsSync(dbPath)) {
+      const data = fs.readFileSync(dbPath, "utf-8");
       const loaded = JSON.parse(data);
       Object.assign(events, loaded);
     }

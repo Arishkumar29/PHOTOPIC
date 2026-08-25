@@ -205,7 +205,7 @@ export function PublicGallery({ eventData, onBack }) {
     }
   };
 
-  // Invalid event — big neutral rounded card with font-medium tracking-tight messaging
+  // Invalid event — fun & warm card
   if (!eventData?.eventId) {
     return (
       <div className="min-h-screen bg-white dark:bg-zinc-950 font-sans flex items-center justify-center p-6">
@@ -213,20 +213,20 @@ export function PublicGallery({ eventData, onBack }) {
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: 'spring', bounce: 0.3 }}
-          className="bg-slate-50 dark:bg-zinc-900/40 border border-slate-100 dark:border-zinc-800/40 max-w-md w-full rounded-[2.5rem] p-10 text-center"
+          className="bg-gradient-to-br from-purple-50/80 via-white to-orange-50/50 dark:from-zinc-900 dark:via-zinc-900/80 dark:to-zinc-850 border border-purple-100 dark:border-zinc-800/80 max-w-md w-full rounded-[2.5rem] p-10 text-center shadow-sm"
         >
-          <div className="w-16 h-16 bg-slate-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-6">
-            <X className="w-7 h-7 text-slate-400 dark:text-zinc-500" />
+          <div className="w-16 h-16 bg-gradient-to-br from-[#6e2b8b]/10 to-[#da7756]/20 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl select-none">
+            🎈
           </div>
-          <h2 className="text-3xl font-medium tracking-tight text-slate-900 dark:text-zinc-50 mb-3">Event not found</h2>
-          <p className="text-slate-500 dark:text-zinc-400 font-medium leading-relaxed mb-8">
-            This gallery link appears to be invalid or has expired.
+          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900 dark:text-zinc-50 mb-3">Looking for a party? ✨</h2>
+          <p className="text-slate-600 dark:text-zinc-400 font-medium text-sm sm:text-base leading-relaxed mb-8">
+            This event link has wrapped up or hasn't opened yet! Please double-check your QR code or reach out to the event host.
           </p>
           <button 
             onClick={onBack} 
-            className="bg-slate-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-bold px-8 py-4 rounded-full hover:bg-slate-800 dark:hover:bg-zinc-200 transition-all shadow-lg hover:shadow-xl"
+            className="bg-gradient-to-r from-[#6e2b8b] to-[#da7756] hover:opacity-95 text-white font-bold px-8 py-3.5 rounded-full transition-all shadow-lg shadow-purple-950/20 hover:scale-102 cursor-pointer"
           >
-            Go Home
+            Back to Portal
           </button>
         </motion.div>
       </div>
@@ -513,38 +513,56 @@ export function PublicGallery({ eventData, onBack }) {
               </div>
             )}
 
-            {/* Error state */}
+            {/* Error / No Photo Found State — Fun & Engaging */}
             {scanError && (
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-slate-50 dark:bg-zinc-900/40 border border-slate-100 dark:border-zinc-800/40 rounded-[2rem] p-12 text-center mb-12"
+                className="bg-gradient-to-br from-purple-50/80 via-white to-orange-50/50 dark:from-zinc-900 dark:via-zinc-900/80 dark:to-zinc-850 border border-purple-100 dark:border-zinc-800/80 rounded-[2.5rem] p-12 text-center mb-12 shadow-sm max-w-lg mx-auto"
               >
-                <div className="w-14 h-14 bg-slate-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <X className="w-6 h-6 text-slate-400" />
+                <div className="w-16 h-16 bg-gradient-to-br from-[#6e2b8b]/10 to-[#da7756]/20 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl select-none">
+                  🙈
                 </div>
-                <h3 className="text-2xl font-medium tracking-tight text-slate-900 dark:text-zinc-50 mb-3">Unable to analyze</h3>
-                <p className="text-slate-500 dark:text-zinc-400 font-medium max-w-md mx-auto">{scanError}</p>
+                <h3 className="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900 dark:text-zinc-50 mb-3">
+                  Playing Hide & Seek? ✨
+                </h3>
+                <p className="text-slate-600 dark:text-zinc-400 font-medium text-sm sm:text-base leading-relaxed max-w-md mx-auto mb-8">
+                  We couldn't spot your smile in this batch just yet! The host might still be uploading more high-res event moments.
+                </p>
+                <button 
+                  onClick={startCamera}
+                  className="bg-gradient-to-r from-[#6e2b8b] to-[#da7756] hover:opacity-95 text-white font-bold px-8 py-3.5 rounded-full shadow-lg shadow-purple-950/20 transition-all hover:scale-102 flex items-center justify-center gap-2 mx-auto cursor-pointer"
+                >
+                  <RefreshCcw className="w-4 h-4" />
+                  Try Another Selfie 🤳
+                </button>
               </motion.div>
             )}
 
-            {/* Empty state — large neutral rounded card, font-medium */}
+            {/* Empty state — Fun & Friendly */}
             {!scanError && matchedPhotos?.length === 0 && (
               <motion.div 
                 initial={{ opacity: 0, scale: 0.95 }} 
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ type: 'spring', bounce: 0.3 }}
-                className="bg-slate-50 dark:bg-zinc-900/40 border border-slate-100 dark:border-zinc-800/40 rounded-[2.5rem] sm:rounded-[3rem] p-16 text-center"
+                className="bg-gradient-to-br from-purple-50/80 via-white to-orange-50/50 dark:from-zinc-900 dark:via-zinc-900/80 dark:to-zinc-850 border border-purple-100 dark:border-zinc-800/80 rounded-[2.5rem] p-14 text-center max-w-lg mx-auto shadow-sm"
               >
-                <div className="w-20 h-20 bg-white dark:bg-zinc-800/60 border border-slate-100 dark:border-zinc-800/60 rounded-[1.75rem] flex items-center justify-center mx-auto mb-8">
-                  <ScanFace className="w-9 h-9 text-slate-400 dark:text-zinc-550" />
+                <div className="w-20 h-20 bg-gradient-to-br from-[#6e2b8b]/10 to-[#da7756]/20 rounded-[1.75rem] flex items-center justify-center mx-auto mb-6 text-4xl select-none">
+                  ✨
                 </div>
-                <h3 className="text-3xl font-medium tracking-tight text-slate-900 dark:text-zinc-50 mb-4">
-                  No photos matched <span className="font-serif italic text-slate-400 dark:text-zinc-500">yet.</span>
+                <h3 className="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900 dark:text-zinc-50 mb-3">
+                  No matches found... <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6e2b8b] to-[#da7756] font-serif italic">yet!</span>
                 </h3>
-                <p className="text-slate-500 dark:text-zinc-400 font-medium leading-relaxed max-w-md mx-auto">
-                  We couldn't find your face in the current gallery. The organizer might still be uploading photos.
+                <p className="text-slate-600 dark:text-zinc-400 font-medium leading-relaxed max-w-md mx-auto mb-8 text-sm sm:text-base">
+                  Our AI combed through the event album, but didn't catch your face this time. Try taking a brighter, front-facing selfie, or check back soon as more snaps get uploaded!
                 </p>
+                <button 
+                  onClick={startCamera}
+                  className="bg-gradient-to-r from-[#6e2b8b] to-[#da7756] hover:opacity-95 text-white font-bold px-8 py-3.5 rounded-full shadow-lg shadow-purple-950/20 transition-all hover:scale-102 flex items-center justify-center gap-2 mx-auto cursor-pointer"
+                >
+                  <Camera className="w-4 h-4" />
+                  Take Another Selfie 📸
+                </button>
               </motion.div>
             )}
 
