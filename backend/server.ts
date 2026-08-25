@@ -38,24 +38,38 @@ async function startServer() {
       root: path.join(process.cwd(), "frontend2", "photopic"),
       configFile: path.join(process.cwd(), "frontend2", "photopic", "vite.config.js"),
       server: { middlewareMode: true },
-      appType: "spa",
+      appType: "custom",
     });
     app.use(vite.middlewares);
+
+    app.get("*", async (req, res, next) => {
+      const url = req.originalUrl;
+      try {
+        const indexPath = path.join(process.cwd(), "frontend2", "photopic", "index.html");
+        if (!fs.existsSync(indexPath)) {
+          return res.status(404).send("index.html not found");
+        }
+        let template = fs.readFileSync(indexPath, "utf-8");
+        template = await vite.transformIndexHtml(url, template);
+        res.status(200).set({ "Content-Type": "text/html" }).end(template);
+      } catch (e) {
+        vite.ssrFixStacktrace(e as Error);
+        next(e);
+      }
+    });
   } else {
     const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));
-  }
 
-  app.get("*", (req, res) => {
-    const indexPath = process.env.NODE_ENV !== "production"
-      ? path.join(process.cwd(), "frontend2", "photopic", "index.html")
-      : path.join(process.cwd(), "dist", "index.html");
-    if (fs.existsSync(indexPath)) {
-      res.sendFile(indexPath);
-    } else {
-      res.status(404).send("index.html not found");
-    }
-  });
+    app.get("*", (req, res) => {
+      const indexPath = path.join(process.cwd(), "dist", "index.html");
+      if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+      } else {
+        res.status(404).send("index.html not found");
+      }
+    });
+  }
 
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);
