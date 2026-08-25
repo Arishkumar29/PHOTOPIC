@@ -43,6 +43,11 @@ async function startServer() {
     app.use(vite.middlewares);
 
     app.get("*", async (req, res, next) => {
+      // Never return index.html for static assets, JavaScript scripts, or Vite internal requests
+      if (req.path.startsWith("/@") || req.path.startsWith("/node_modules") || req.path.match(/\.(js|jsx|ts|tsx|css|json|png|jpg|jpeg|gif|svg|ico|woff|woff2|map)$/)) {
+        return next();
+      }
+
       const url = req.originalUrl;
       try {
         const indexPath = path.join(process.cwd(), "frontend", "index.html");
