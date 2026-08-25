@@ -1,22 +1,9 @@
-import { Home, FolderHeart, PlusCircle, QrCode, BarChart3, Settings, LogOut } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { Home, FolderHeart, PlusCircle, QrCode, BarChart3, Settings } from 'lucide-react';
 import { Logo } from './Logo';
 import { ThemeToggle } from './ThemeToggle';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 
 export function Sidebar({ activeTab, setActiveTab, mobileMenuOpen, setMobileMenuOpen }) {
-  const { logout } = useAuth();
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      setActiveTab('auth');
-      setMobileMenuOpen(false);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
   const navItems = [
     { id: 'organizer', icon: Home, label: 'Home' },
     { id: 'events', icon: FolderHeart, label: 'My Events' },
@@ -35,7 +22,7 @@ export function Sidebar({ activeTab, setActiveTab, mobileMenuOpen, setMobileMenu
           <Logo onClick={() => { setActiveTab('organizer'); setMobileMenuOpen(false); }} />
         </div>
         
-        {/* Navigation — soft hover:opacity style matching landing nav links */}
+        {/* Navigation */}
         <nav className="flex flex-col gap-0.5 relative">
           {navItems.map((item) => {
             const isActive = activeTab === item.id || (item.id === 'organizer' && activeTab === 'dashboard');
@@ -43,13 +30,13 @@ export function Sidebar({ activeTab, setActiveTab, mobileMenuOpen, setMobileMenu
               <button 
                 key={item.id}
                 onClick={() => { setActiveTab(item.id); setMobileMenuOpen(false); }}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold transition-all text-sm relative select-none text-left ${
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold transition-all text-sm relative select-none text-left cursor-pointer ${
                   isActive 
                     ? 'text-slate-900 dark:text-zinc-50' 
                     : 'text-slate-500 dark:text-zinc-400 hover:opacity-60'
                 }`}
               >
-                {/* Subtle active background — not a heavy filled pill */}
+                {/* Subtle active background */}
                 {isActive && (
                   <motion.div
                     layoutId="sidebarActiveBg"
@@ -75,33 +62,11 @@ export function Sidebar({ activeTab, setActiveTab, mobileMenuOpen, setMobileMenu
         </nav>
       </div>
       
-      {/* Bottom: Admin Profile + ThemeToggle + Logout */}
+      {/* Bottom */}
       <div className="flex flex-col gap-3 px-1">
-        {/* Admin profile pill */}
-        <div className="flex items-center gap-3 p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-200/60 dark:border-zinc-800/60">
-          <div className="w-8 h-8 rounded-full bg-slate-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center font-bold text-xs uppercase shadow-sm shrink-0">
-            A
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold text-slate-900 dark:text-zinc-100 truncate">Admin Organizer</p>
-            <p className="text-[10px] text-slate-400 dark:text-zinc-500 truncate">admin@photopic.app</p>
-          </div>
-        </div>
-
-        {/* Theme toggle row */}
         <div className="flex items-center justify-between px-2 py-1">
           <span className="text-xs font-semibold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">Theme</span>
           <ThemeToggle />
-        </div>
-
-        <div className="border-t border-slate-100 dark:border-zinc-800/40 pt-2">
-          <button 
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold transition-all text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 text-left cursor-pointer"
-          >
-            <LogOut className="w-4 h-4 shrink-0" />
-            Logout
-          </button>
         </div>
       </div>
     </aside>
