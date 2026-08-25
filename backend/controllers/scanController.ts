@@ -6,7 +6,7 @@ import os from "os";
 import { events } from "./eventController";
 import { initAnalytics, eventAnalytics } from "./analyticsController";
 import { getBulkPhotoDir, ensureDirExists, removeDirSync } from "../services/storageService";
-import { scanFacesWithGeminiNode, runPythonScan, ScanMatch } from "../services/faceScanService";
+import { runPythonScan, ScanMatch } from "../services/faceScanService";
 
 const scanRateLimit = new Map<string, { count: number; resetTime: number }>();
 

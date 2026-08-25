@@ -1,6 +1,5 @@
 {
-  "name": "PrivaPic",
-  "description": "Privacy-first photo filtering system using facial recognition. Concept prototype and technical architecture.",
-  "requestFramePermissions": ["camera"],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "name": "Photopic",
+  "description": "Privacy-first photo filtering system using SFace + OpenCV facial recognition.",
+  "requestFramePermissions": ["camera"]
 }
