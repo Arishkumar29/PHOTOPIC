@@ -639,34 +639,34 @@ export function Organizer({ initialView = 'dashboard', onOpenPublicView }) {
                       </div>
                     </div>
 
-                    {/* === RIGHT: LIVE PREVIEW CARD — dark panel matching Features section === */}
+                    {/* === RIGHT: LIVE PREVIEW CARD — clean light card === */}
                     <div className="lg:col-span-2">
-                      <div className="bg-slate-900 dark:bg-zinc-900/60 backdrop-blur-md border border-slate-800 dark:border-zinc-800/60 text-white rounded-[1.75rem] overflow-hidden shadow-xl relative">
+                      <div className="bg-white dark:bg-zinc-900 border border-purple-100 dark:border-zinc-800 text-slate-900 dark:text-zinc-50 rounded-[2rem] overflow-hidden shadow-lg relative">
                         {/* Cover image with gradient */}
                         <div className="relative h-48 w-full overflow-hidden">
                           <img src={coverImage} className="w-full h-full object-cover" />
-                          <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
                           {/* Floating type badge */}
-                          <div className="absolute top-3 left-3 bg-white/10 backdrop-blur-sm text-white text-[10px] font-semibold px-3 py-1 rounded-full border border-white/20">
+                          <div className="absolute top-3 left-3 bg-black/40 backdrop-blur-sm text-white text-[10px] font-semibold px-3 py-1 rounded-full border border-white/20">
                             {eventType}
                           </div>
                           {/* Username pill */}
                           <div className="absolute top-3 right-3 bg-white/90 text-slate-900 text-[10px] font-bold px-2 py-0.5 rounded-full border border-slate-100">
-                            @{user?.displayName?.split(' ')[0]?.toLowerCase() || 'organizer'}
+                            @{user?.displayName?.split(' ')[0]?.toLowerCase() || 'admin'}
                           </div>
                         </div>
 
                         {/* Content */}
                         <div className="p-5 space-y-3">
                           <div>
-                            <div className="text-[10px] font-medium uppercase tracking-widest text-slate-400 mb-1">Gallery Preview</div>
-                            <h4 className="text-xl font-medium tracking-tight text-white leading-tight">
-                              {eventName || <span className="text-slate-500 italic">Untitled Event</span>}
+                            <div className="text-[10px] font-semibold uppercase tracking-widest text-[#6e2b8b] dark:text-[#da7756] mb-1">Gallery Preview</div>
+                            <h4 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-zinc-50 leading-tight">
+                              {eventName || <span className="text-slate-400 italic">Untitled Event</span>}
                             </h4>
                           </div>
 
                           {/* Location & date row */}
-                          <div className="flex items-center gap-3 text-xs text-slate-400 font-medium">
+                          <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-zinc-400 font-medium">
                             {eventLocation && (
                               <span className="flex items-center gap-1">
                                 <MapPin className="w-3 h-3" /> {eventLocation}
@@ -679,32 +679,22 @@ export function Organizer({ initialView = 'dashboard', onOpenPublicView }) {
                             )}
                           </div>
 
-                          {/* Mini avatar grid — like landing Faces Grid */}
-                          <div className="flex gap-1.5 pt-1">
-                            {[10, 12, 14, 16, 18].map((n) => (
-                              <div key={n} className="w-7 h-7 rounded-full overflow-hidden border-2 border-slate-800">
-                                <img src={`https://i.pravatar.cc/80?img=${n}`} className="w-full h-full object-cover grayscale" />
-                              </div>
-                            ))}
-                            <div className="w-7 h-7 rounded-full bg-white/10 border-2 border-slate-800 flex items-center justify-center text-[10px] font-bold text-slate-300">+</div>
-                          </div>
-
                           {/* Step indicator line */}
-                          <div className="pt-3 border-t border-white/10">
+                          <div className="pt-3 border-t border-slate-100 dark:border-zinc-800">
                             <div className="flex gap-1.5">
                               {[1,2,3].map(n => (
-                                <div key={n} className={`h-1 flex-1 rounded-full transition-colors ${n <= 1 ? 'bg-white' : 'bg-white/20'}`} />
+                                <div key={n} className={`h-1.5 flex-1 rounded-full transition-colors ${n <= 1 ? 'bg-gradient-to-r from-[#6e2b8b] to-[#da7756]' : 'bg-slate-200 dark:bg-zinc-800'}`} />
                               ))}
                             </div>
-                            <p className="text-[10px] text-slate-400 font-medium mt-2">Step 1 of 3 — Event Details</p>
+                            <p className="text-[10px] text-slate-400 font-semibold mt-2">Step 1 of 3 — Event Details</p>
                           </div>
                         </div>
                       </div>
 
                       {/* Tip box */}
-                      <div className="mt-3 bg-slate-50 dark:bg-zinc-900/40 border border-slate-100 dark:border-zinc-800/40 rounded-2xl p-4">
-                        <p className="text-xs font-medium text-slate-500 dark:text-zinc-400 leading-relaxed">
-                          <span className="font-semibold text-slate-900 dark:text-zinc-100">Tip:</span> A strong cover photo and clear event name help guests identify their gallery instantly.
+                      <div className="mt-3 bg-purple-50/50 dark:bg-purple-950/20 border border-purple-100 dark:border-zinc-800 rounded-2xl p-4">
+                        <p className="text-xs font-medium text-slate-600 dark:text-zinc-400 leading-relaxed">
+                          <span className="font-semibold text-[#6e2b8b] dark:text-[#da7756]">Tip:</span> A clear event name and cover photo help guests identify their gallery instantly.
                         </p>
                       </div>
                     </div>
@@ -723,132 +713,98 @@ export function Organizer({ initialView = 'dashboard', onOpenPublicView }) {
                   >
                     {/* Step 2 hero heading */}
                     <div>
-                      <div className="text-xs font-medium uppercase tracking-widest text-slate-500 dark:text-zinc-400 mb-3">Step 2 of 3</div>
-                      <h2 className="text-3xl sm:text-4xl font-medium tracking-tight text-slate-900 dark:text-zinc-50 leading-[1.05] mb-3">
-                        Connect your <span className="font-serif italic text-slate-400 dark:text-zinc-500">Drive.</span>
+                      <div className="text-xs font-semibold uppercase tracking-widest text-[#6e2b8b] dark:text-[#da7756] mb-3">Step 2 of 3</div>
+                      <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900 dark:text-zinc-50 leading-[1.05] mb-3">
+                        Connect your <span className="font-serif italic text-transparent bg-clip-text bg-gradient-to-r from-[#6e2b8b] to-[#da7756]">Drive.</span>
                       </h2>
                       <p className="text-slate-500 dark:text-zinc-400 font-medium leading-relaxed">
                         Link a shared Google Drive folder and we’ll sync all photos automatically for face-recognition matching.
                       </p>
                     </div>
 
-                    {/* 3-step visual instruction cards — like landing page gateway cards */}
+                    {/* 3-step visual instruction cards */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       {[
                         { n: '01', title: 'Open Drive', body: 'Go to drive.google.com and create or open a folder with your event photos.' },
                         { n: '02', title: 'Share Folder', body: 'Right-click the folder → Share → set link access to “Anyone with link can view”.' },
                         { n: '03', title: 'Paste Link', body: 'Copy the folder link and paste it in the field below to connect your gallery.' },
                       ].map((card) => (
-                        <div key={card.n} className="bg-slate-900 dark:bg-zinc-900/60 border border-slate-800 dark:border-zinc-800/60 rounded-[1.5rem] p-5 text-white">
-                          <div className="text-2xl font-medium tracking-tight text-slate-500 mb-3">{card.n}</div>
-                          <h4 className="font-medium text-base mb-1.5">{card.title}</h4>
-                          <p className="text-xs text-slate-400 leading-relaxed font-medium">{card.body}</p>
+                        <div key={card.n} className="bg-white dark:bg-zinc-900/60 border border-purple-100/70 dark:border-zinc-800 rounded-[1.5rem] p-5 text-slate-900 dark:text-zinc-50 shadow-sm">
+                          <div className="text-2xl font-bold tracking-tight text-[#6e2b8b] dark:text-[#da7756] mb-3">{card.n}</div>
+                          <h4 className="font-semibold text-base mb-1.5">{card.title}</h4>
+                          <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed font-medium">{card.body}</p>
                         </div>
                       ))}
                     </div>
 
                     {/* Drive link input */}
                     <div>
-                      <label className="block text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-zinc-400 mb-3">Google Drive Folder Link</label>
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-zinc-400 mb-3">Google Drive Folder Link</label>
                       <input 
                         type="text"
                         value={folderLink}
                         onChange={e => setFolderLink(e.target.value)}
-                        className="w-full px-5 py-4 bg-white dark:bg-zinc-900/60 border-2 border-slate-200 dark:border-zinc-800/60 rounded-2xl focus:outline-none focus:border-slate-900 dark:focus:border-zinc-100 font-medium text-sm text-slate-900 dark:text-zinc-50 placeholder:text-slate-400 dark:placeholder:text-zinc-600 transition-colors"
+                        className="w-full px-5 py-4 bg-white dark:bg-zinc-900/60 border-2 border-slate-200 dark:border-zinc-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#6e2b8b] font-medium text-sm text-slate-900 dark:text-zinc-50 placeholder:text-slate-400 dark:placeholder:text-zinc-600 transition-colors shadow-sm"
                         placeholder="https://drive.google.com/drive/folders/…"
                       />
                     </div>
-
-                    {/* Syncing state — neutral panel, no yellow */}
-                    {isSyncing && (
-                      <div className="p-5 bg-slate-50 dark:bg-zinc-900/40 border border-slate-100 dark:border-zinc-800/40 rounded-2xl flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-slate-900 dark:bg-zinc-100 flex items-center justify-center shrink-0">
-                          <Loader2 className="w-5 h-5 text-white dark:text-zinc-900 animate-spin" />
-                        </div>
-                        <div>
-                          <span className="text-sm font-medium text-slate-900 dark:text-zinc-50 block">Syncing Drive folder…</span>
-                          <span className="text-xs text-slate-500 dark:text-zinc-400 font-medium">Contacting Google Workspace API</span>
-                        </div>
-                      </div>
-                    )}
                   </motion.div>
                 )}
 
                 {step === 3 && (
                   <motion.div 
                     key="step3" 
-                    initial={{ opacity: 0, scale: 0.95 }} 
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ type: 'spring', bounce: 0.3 }}
-                    className="space-y-6 max-w-xl mx-auto py-4"
+                    initial={{ opacity: 0, y: 20 }} 
+                    animate={{ opacity: 1, y: 0 }} 
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ type: 'spring', bounce: 0.2 }}
+                    className="max-w-xl mx-auto text-center space-y-6"
                   >
-                    {/* Orange full-bleed QR reveal card — matches gateway section style */}
-                    <motion.div
-                      initial={{ opacity: 0, y: 30 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ type: 'spring', bounce: 0.3, delay: 0.1 }}
-                      className="relative w-full rounded-[1.75rem] sm:rounded-[2.5rem] overflow-hidden bg-[#ff5e3a] p-8 sm:p-12 text-white text-center"
-                    >
-                      {/* Scattered icon background */}
-                      <div className="absolute inset-0 pointer-events-none grid grid-cols-6 grid-rows-4 gap-6 opacity-[0.12] p-6">
-                        {[...Array(24)].map((_, i) => (
-                          <div key={i} className="flex items-center justify-center">
-                            {i % 2 === 0 ? <Camera className="w-full h-full text-white"/> : <Lock className="w-full h-full text-white"/>}
-                          </div>
-                        ))}
+                    <div className="w-20 h-20 bg-gradient-to-br from-[#6e2b8b]/10 to-[#da7756]/20 rounded-full flex items-center justify-center mx-auto text-4xl select-none">
+                      🎉
+                    </div>
+
+                    <div>
+                      <h2 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-zinc-50">Gallery Published!</h2>
+                      <p className="text-slate-500 dark:text-zinc-400 font-medium text-sm mt-2">
+                        Event <span className="font-bold text-slate-800 dark:text-zinc-200">{eventName}</span> is live. Guests can scan below.
+                      </p>
+                    </div>
+
+                    {/* QR Code Container */}
+                    <div className="bg-purple-50/50 dark:bg-zinc-800/60 border border-purple-100 dark:border-zinc-700 rounded-[2rem] p-6 flex justify-center shadow-inner inline-block">
+                      <div className="p-3 bg-white rounded-2xl shadow-md border border-slate-100">
+                        <QRCode value={eventQRLink} size={180} style={{ height: 'auto', maxWidth: '100%', width: '100%' }} />
                       </div>
+                    </div>
 
-                      {/* Check icon */}
-                      <motion.div 
-                        initial={{ scale: 0 }} 
-                        animate={{ scale: 1 }} 
-                        transition={{ type: 'spring', damping: 10, delay: 0.2 }}
-                        className="w-14 h-14 bg-white/20 backdrop-blur-sm text-white rounded-full flex items-center justify-center mx-auto mb-6 border border-white/30"
-                      >
-                        <CheckCircle2 className="w-7 h-7" />
-                      </motion.div>
-
-                      <h3 className="text-3xl sm:text-4xl font-medium tracking-tight mb-2 relative z-10">Gallery is Live!</h3>
-                      <p className="text-white/80 font-medium text-sm relative z-10 mb-8">Your guests scan this QR code to access their face-matched photos.</p>
-
-                      {/* QR code on white bg */}
-                      <motion.div 
-                        initial={{ scale: 0.8, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ delay: 0.3, type: 'spring' }}
-                        className="bg-white p-4 rounded-2xl shadow-2xl inline-block mx-auto relative z-10"
-                      >
-                        <QRCode value={publicLink} size={150} style={{ height: 'auto', maxWidth: '100%', width: '100%' }} />
-                      </motion.div>
-                    </motion.div>
-
-                    {/* Link copy row */}
-                    <div className="flex gap-2">
+                    {/* Copy Link input */}
+                    <div className="flex gap-2 max-w-md mx-auto">
                       <input 
-                        type="text" 
-                        readOnly 
-                        value={publicLink}
-                        className="flex-1 px-4 py-3 bg-slate-50 dark:bg-zinc-900/40 border border-slate-200 dark:border-zinc-800/40 rounded-2xl text-xs text-slate-800 dark:text-zinc-200 font-medium focus:outline-none"
+                        type="text"
+                        readOnly
+                        value={eventQRLink}
+                        className="flex-1 px-4 py-3 bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700 rounded-xl text-xs text-slate-700 dark:text-zinc-300 font-medium select-all"
                       />
                       <button 
-                        onClick={() => copyLink(publicLink, 'wizard_pub')}
-                        className="p-3 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 rounded-2xl text-slate-700 dark:text-zinc-200 transition-colors shrink-0" 
+                        onClick={() => copyLink(eventQRLink, 'step3_link')}
+                        className="p-3 bg-gradient-to-r from-[#6e2b8b] to-[#da7756] text-white rounded-xl transition-opacity hover:opacity-90 shrink-0 cursor-pointer shadow-sm"
                       >
-                        {copiedId === 'wizard_pub' ? <CheckCircle2 className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                        {copiedId === 'step3_link' ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                       </button>
                     </div>
 
-                    {/* Action buttons — rounded-full pills */}
-                    <div className="flex gap-3">
+                    {/* Action buttons */}
+                    <div className="flex gap-3 max-w-md mx-auto">
                       <button 
                         onClick={() => onOpenPublicView({ eventName, eventId })}
-                        className="flex-1 bg-slate-900 dark:bg-zinc-100 hover:bg-slate-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 font-bold py-4 rounded-full transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 text-sm"
+                        className="flex-1 bg-gradient-to-r from-[#6e2b8b] to-[#da7756] hover:opacity-95 text-white font-bold py-4 rounded-full transition-all shadow-lg shadow-purple-950/20 flex items-center justify-center gap-2 text-sm cursor-pointer"
                       >
                         Launch Experience <ArrowRight className="w-4 h-4" />
                       </button>
                       <button 
                         onClick={() => setViewMode('dashboard')}
-                        className="px-6 py-4 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 font-bold rounded-full transition-all text-sm"
+                        className="px-6 py-4 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 font-bold rounded-full transition-all text-sm cursor-pointer"
                       >
                         Dashboard
                       </button>
@@ -861,13 +817,13 @@ export function Organizer({ initialView = 'dashboard', onOpenPublicView }) {
 
             {/* Wizard footer — rounded-full pill buttons matching landing page primary/secondary */}
             {step < 3 && (
-              <div className="absolute bottom-0 left-0 right-0 bg-white/80 dark:bg-zinc-900/60 backdrop-blur-xl border-t border-slate-100 dark:border-zinc-800/40 px-6 py-4 flex justify-between z-20 items-center rounded-b-[2.5rem]">
+              <div className="absolute bottom-0 left-0 right-0 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border-t border-slate-100 dark:border-zinc-800/40 px-6 py-4 flex justify-between z-20 items-center rounded-b-[2.5rem]">
                 {step === 1 ? (
                   <div className="text-xs text-slate-400 dark:text-zinc-500 font-medium">Fill event fields to proceed</div>
                 ) : (
                   <button 
                     onClick={() => setStep(1)}
-                    className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 font-semibold rounded-full transition-all text-sm"
+                    className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 font-semibold rounded-full transition-all text-sm cursor-pointer"
                   >
                     Back
                   </button>
@@ -876,7 +832,7 @@ export function Organizer({ initialView = 'dashboard', onOpenPublicView }) {
                 {step === 1 ? (
                   <button 
                     onClick={handleNextStep1}
-                    className="bg-slate-900 dark:bg-zinc-100 hover:bg-slate-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 font-bold text-sm px-7 py-3 rounded-full transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
+                    className="bg-gradient-to-r from-[#6e2b8b] to-[#da7756] hover:opacity-95 text-white font-bold text-sm px-7 py-3 rounded-full transition-all shadow-md shadow-purple-950/20 flex items-center gap-2 cursor-pointer"
                   >
                     Next: Connect Drive <ArrowRight className="w-4 h-4" />
                   </button>
@@ -884,7 +840,7 @@ export function Organizer({ initialView = 'dashboard', onOpenPublicView }) {
                   <button 
                     onClick={handleDriveSync}
                     disabled={!folderLink || isSyncing}
-                    className="bg-slate-900 dark:bg-zinc-100 hover:bg-slate-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 font-bold text-sm px-7 py-3 rounded-full transition-all shadow-lg hover:shadow-xl flex items-center gap-2 disabled:opacity-50"
+                    className="bg-gradient-to-r from-[#6e2b8b] to-[#da7756] hover:opacity-95 text-white font-bold text-sm px-7 py-3 rounded-full transition-all shadow-md shadow-purple-950/20 flex items-center gap-2 disabled:opacity-50 cursor-pointer"
                   >
                     {isSyncing ? <><Loader2 className="w-4 h-4 animate-spin" /> Connecting…</> : <>Next: Review &amp; Publish <ArrowRight className="w-4 h-4" /></>}
                   </button>
@@ -901,30 +857,35 @@ export function Organizer({ initialView = 'dashboard', onOpenPublicView }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
             transition={{ type: 'spring', bounce: 0.2 }}
-            className="bg-slate-50 dark:bg-zinc-900/40 border border-slate-100 dark:border-zinc-800/40 rounded-[2.5rem] p-8 max-w-xl mx-auto text-center space-y-8"
+            className="bg-white dark:bg-zinc-900 border border-purple-100 dark:border-zinc-800 rounded-[2.5rem] p-8 max-w-xl mx-auto text-center space-y-8 shadow-sm"
           >
             <div>
-              <h2 className="text-3xl sm:text-4xl font-medium tracking-tight text-slate-900 dark:text-zinc-50">One QR System</h2>
+              <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900 dark:text-zinc-50">One QR System</h2>
               <p className="text-slate-500 dark:text-zinc-400 font-medium mt-2">Your single persistent QR code, always routed to your active event gallery.</p>
             </div>
             
-            <div className="bg-white dark:bg-zinc-900/60 border border-slate-100 dark:border-zinc-800/40 p-8 rounded-[2rem] inline-block shadow-lg">
-              <QRCode value={globalQRLink} size={200} style={{ height: 'auto', maxWidth: '100%', width: '100%' }} />
+            <div className="bg-purple-50/50 dark:bg-zinc-800/60 border border-purple-100 dark:border-zinc-700 p-8 rounded-[2rem] inline-block shadow-md">
+              <div className="p-3 bg-white rounded-2xl shadow-sm">
+                <QRCode value={globalQRLink} size={200} style={{ height: 'auto', maxWidth: '100%', width: '100%' }} />
+              </div>
             </div>
 
             <div className="w-full max-w-md mx-auto space-y-4">
               <div className="flex gap-2 justify-center">
-                <button className="bg-slate-900 dark:bg-zinc-100 hover:bg-slate-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 font-bold px-6 py-3.5 rounded-full transition-all shadow-lg hover:shadow-xl text-sm flex items-center gap-2">
+                <button 
+                  onClick={() => window.print()}
+                  className="bg-gradient-to-r from-[#6e2b8b] to-[#da7756] hover:opacity-95 text-white font-bold px-6 py-3.5 rounded-full transition-all shadow-md shadow-purple-950/20 text-sm flex items-center gap-2 cursor-pointer"
+                >
                   <Download className="w-4 h-4" /> Download Printable QR
                 </button>
                 <button 
                   onClick={() => copyLink(globalQRLink, 'oneqr_tab')}
-                  className="bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 font-bold px-6 py-3.5 rounded-full transition-all text-sm flex items-center gap-2"
+                  className="bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 font-bold px-6 py-3.5 rounded-full transition-all text-sm flex items-center gap-2 cursor-pointer"
                 >
                   <Copy className="w-4 h-4" /> {copiedId === 'oneqr_tab' ? 'Copied!' : 'Copy Link'}
                 </button>
               </div>
-              <div className="text-xs text-slate-500 dark:text-zinc-400 font-medium py-2 rounded-2xl bg-slate-100 dark:bg-zinc-900/40 border border-slate-100 dark:border-zinc-800/40 select-all px-4">
+              <div className="text-xs text-slate-500 dark:text-zinc-400 font-medium py-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/40 border border-slate-200 dark:border-zinc-700 select-all px-4">
                 {globalQRLink}
               </div>
             </div>
@@ -941,7 +902,7 @@ export function Organizer({ initialView = 'dashboard', onOpenPublicView }) {
           >
             {/* Page Header matching Settings section style */}
             <div className="mb-8">
-              <h2 className="text-3xl font-medium text-slate-900 dark:text-zinc-50 tracking-tight mb-2">Analytics &amp; Performance</h2>
+              <h2 className="text-3xl font-semibold text-slate-900 dark:text-zinc-50 tracking-tight mb-2">Analytics &amp; Performance</h2>
               <p className="text-slate-500 dark:text-zinc-400 font-medium text-sm">Monitor public gallery visits, image downloads, and facial search registrations in real time.</p>
             </div>
 
@@ -954,9 +915,9 @@ export function Organizer({ initialView = 'dashboard', onOpenPublicView }) {
                     <button
                       key={tab}
                       onClick={() => setAnalyticsSubTab(tab)}
-                      className={`px-2 py-2.5 text-sm font-medium tracking-tight border-b-2 transition-all -mb-[10px] relative select-none ${
+                      className={`px-2 py-2.5 text-sm font-semibold tracking-tight border-b-2 transition-all -mb-[10px] relative select-none cursor-pointer ${
                         isActive 
-                          ? 'text-slate-900 dark:text-zinc-50 border-slate-900 dark:border-zinc-100' 
+                          ? 'text-[#6e2b8b] dark:text-[#da7756] border-[#6e2b8b] dark:border-[#da7756]' 
                           : 'text-slate-400 dark:text-zinc-500 border-transparent hover:opacity-60'
                       }`}
                     >
@@ -972,20 +933,20 @@ export function Organizer({ initialView = 'dashboard', onOpenPublicView }) {
                 <div className="relative">
                   <button 
                     onClick={() => { setShowGroupByDropdown(!showGroupByDropdown); setShowPeriodDropdown(false); }}
-                    className="bg-white/60 dark:bg-zinc-900/40 border border-slate-200/60 dark:border-zinc-800/60 px-3.5 py-2 rounded-full text-slate-700 dark:text-zinc-300 font-semibold cursor-pointer hover:bg-slate-50 dark:hover:bg-zinc-800/60 select-none flex items-center gap-1.5 transition-colors"
+                    className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 px-3.5 py-2 rounded-full text-slate-700 dark:text-zinc-300 font-semibold cursor-pointer hover:bg-slate-50 select-none flex items-center gap-1.5 transition-colors shadow-sm"
                   >
                     Group By: {analyticsGroupBy}
                     <span className="text-[10px] opacity-60">▼</span>
                   </button>
                   {showGroupByDropdown && (
-                    <div className="absolute right-0 mt-2 w-32 bg-white dark:bg-zinc-900 border border-slate-200/60 dark:border-zinc-800 rounded-2xl shadow-xl z-50 p-1 flex flex-col gap-0.5">
+                    <div className="absolute right-0 mt-2 w-32 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl shadow-xl z-50 p-1 flex flex-col gap-0.5">
                       {['Day', 'Week', 'Month'].map((opt) => (
                         <button
                           key={opt}
                           onClick={() => { setAnalyticsGroupBy(opt); setShowGroupByDropdown(false); }}
                           className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-all ${
                             analyticsGroupBy === opt 
-                              ? 'bg-slate-900 dark:bg-zinc-100 text-white dark:text-slate-900 font-bold' 
+                              ? 'bg-gradient-to-r from-[#6e2b8b] to-[#da7756] text-white font-bold' 
                               : 'text-slate-500 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-900/60'
                           }`}
                         >
@@ -1000,14 +961,14 @@ export function Organizer({ initialView = 'dashboard', onOpenPublicView }) {
                 <div className="relative">
                   <button 
                     onClick={() => { setShowPeriodDropdown(!showPeriodDropdown); setShowGroupByDropdown(false); }}
-                    className="bg-white/60 dark:bg-zinc-900/40 border border-slate-200/60 dark:border-zinc-800/60 px-3.5 py-2 rounded-full text-slate-700 dark:text-zinc-300 font-semibold cursor-pointer hover:bg-slate-50 dark:hover:bg-zinc-800/60 select-none flex items-center gap-1.5 transition-colors"
+                    className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 px-3.5 py-2 rounded-full text-slate-700 dark:text-zinc-300 font-semibold cursor-pointer hover:bg-slate-50 select-none flex items-center gap-1.5 transition-colors shadow-sm"
                   >
                     <CalendarRange className="w-3.5 h-3.5 text-slate-500" /> 
                     {analyticsPeriod === '7' ? 'Last 7 Days' : analyticsPeriod === '30' ? 'Last 30 Days' : 'Last 90 Days'}
                     <span className="text-[10px] opacity-60">▼</span>
                   </button>
                   {showPeriodDropdown && (
-                    <div className="absolute right-0 mt-2 w-36 bg-white dark:bg-zinc-900 border border-slate-200/60 dark:border-zinc-800 rounded-2xl shadow-xl z-50 p-1 flex flex-col gap-0.5">
+                    <div className="absolute right-0 mt-2 w-36 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl shadow-xl z-50 p-1 flex flex-col gap-0.5">
                       {[
                         { id: '7', label: 'Last 7 Days' },
                         { id: '30', label: 'Last 30 Days' },
@@ -1018,7 +979,7 @@ export function Organizer({ initialView = 'dashboard', onOpenPublicView }) {
                           onClick={() => { setAnalyticsPeriod(opt.id); setShowPeriodDropdown(false); }}
                           className={`w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
                             analyticsPeriod === opt.id 
-                              ? 'bg-slate-900 dark:bg-zinc-100 text-white dark:text-slate-900 font-bold' 
+                              ? 'bg-gradient-to-r from-[#6e2b8b] to-[#da7756] text-white font-bold' 
                               : 'text-slate-500 dark:text-zinc-400 hover:bg-slate-50 dark:hover:bg-zinc-900/60'
                           }`}
                         >

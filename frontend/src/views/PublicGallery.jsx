@@ -380,8 +380,8 @@ export function PublicGallery({ eventData, onBack }) {
             transition={{ type: 'spring', bounce: 0.3 }}
             className="max-w-md mx-auto"
           >
-            <div className="bg-slate-900 dark:bg-zinc-900 rounded-[2.5rem] p-3 shadow-2xl border border-slate-800 dark:border-zinc-800/60 relative overflow-hidden">
-              <div className="aspect-[3/4] rounded-[2rem] overflow-hidden bg-zinc-900 relative">
+            <div className="bg-gradient-to-br from-purple-50/90 via-white to-orange-50/60 dark:from-zinc-900 dark:via-zinc-900/90 dark:to-zinc-850 rounded-[2.5rem] p-4 shadow-xl border border-purple-100 dark:border-zinc-800 relative overflow-hidden">
+              <div className="aspect-[3/4] rounded-[2rem] overflow-hidden bg-slate-900 relative shadow-inner">
                 <video 
                   id="camera-preview"
                   ref={(node) => {
@@ -395,48 +395,48 @@ export function PublicGallery({ eventData, onBack }) {
                   className="w-full h-full object-cover transform -scale-x-100"
                 />
                 
-                {/* Scanner overlay — matches landing page scanning animation */}
+                {/* Scanner overlay */}
                 <div className="absolute inset-0 pointer-events-none">
                   {/* Scan line */}
                   <motion.div 
                     animate={{ y: ['0%', '100%', '0%'] }}
                     transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
-                    className="absolute top-0 left-0 w-full h-0.5 bg-blue-500 shadow-[0_0_15px_5px_rgba(59,130,246,0.5)] z-30"
+                    className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#6e2b8b] via-[#da7756] to-[#6e2b8b] shadow-[0_0_15px_5px_rgba(218,119,86,0.6)] z-30"
                   />
                   {/* Scan overlay tint */}
                   <motion.div 
                     animate={{ opacity: [0, 0.15, 0] }}
                     transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
-                    className="absolute inset-0 bg-blue-500 mix-blend-overlay z-20"
+                    className="absolute inset-0 bg-purple-500 mix-blend-overlay z-20"
                   />
                   {/* Face bounding box */}
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-40 h-48 relative">
-                      <div className="absolute -top-1 -left-1 w-4 h-4 border-t-2 border-l-2 border-white/80" />
-                      <div className="absolute -top-1 -right-1 w-4 h-4 border-t-2 border-r-2 border-white/80" />
-                      <div className="absolute -bottom-1 -left-1 w-4 h-4 border-b-2 border-l-2 border-white/80" />
-                      <div className="absolute -bottom-1 -right-1 w-4 h-4 border-b-2 border-r-2 border-white/80" />
+                    <div className="w-44 h-52 relative">
+                      <div className="absolute -top-1 -left-1 w-5 h-5 border-t-3 border-l-3 border-white" />
+                      <div className="absolute -top-1 -right-1 w-5 h-5 border-t-3 border-r-3 border-white" />
+                      <div className="absolute -bottom-1 -left-1 w-5 h-5 border-b-3 border-l-3 border-white" />
+                      <div className="absolute -bottom-1 -right-1 w-5 h-5 border-b-3 border-r-3 border-white" />
                     </div>
                   </div>
                   {/* Align face label */}
                   <div className="absolute bottom-20 left-0 right-0 flex justify-center">
-                    <span className="text-white/70 font-semibold tracking-widest text-xs uppercase bg-black/30 backdrop-blur-sm px-3 py-1 rounded-full">ALIGN FACE</span>
+                    <span className="text-white font-bold tracking-widest text-xs uppercase bg-black/40 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/20">ALIGN FACE</span>
                   </div>
                 </div>
               </div>
               
               {/* Capture button */}
-              <div className="absolute bottom-10 left-0 right-0 flex justify-center">
+              <div className="absolute bottom-8 left-0 right-0 flex justify-center">
                 <button 
                   onClick={capturePhoto}
-                  className="w-18 h-18 bg-white rounded-full border-4 border-slate-200 shadow-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
+                  className="w-18 h-18 bg-white rounded-full border-4 border-[#6e2b8b]/30 shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-transform cursor-pointer"
                   style={{ width: '72px', height: '72px' }}
                 >
-                  <div className="w-14 h-14 bg-white rounded-full border border-slate-100" />
+                  <div className="w-13 h-13 bg-gradient-to-r from-[#6e2b8b] to-[#da7756] rounded-full shadow-inner" style={{ width: '52px', height: '52px' }} />
                 </button>
               </div>
             </div>
-            <p className="text-center text-slate-500 dark:text-zinc-400 font-medium mt-6">Position your face in the center.</p>
+            <p className="text-center text-slate-500 dark:text-zinc-400 font-medium mt-6">Position your face clearly in the frame.</p>
           </motion.div>
         )}
 
@@ -445,10 +445,10 @@ export function PublicGallery({ eventData, onBack }) {
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="max-w-md mx-auto bg-slate-900 text-white rounded-[2.5rem] p-8 border border-slate-800 shadow-2xl relative overflow-hidden text-center space-y-6"
+            className="max-w-md mx-auto bg-gradient-to-br from-purple-50/90 via-white to-orange-50/60 dark:from-zinc-900 dark:via-zinc-900/90 dark:to-zinc-850 text-slate-900 dark:text-zinc-50 rounded-[2.5rem] p-8 border border-purple-100 dark:border-zinc-800 shadow-xl relative overflow-hidden text-center space-y-6"
           >
             {/* Holographic scanner camera feed view */}
-            <div className="relative w-48 h-48 rounded-[2rem] overflow-hidden border-2 border-[#da7756] shadow-[0_0_30px_rgba(218,119,86,0.4)] mx-auto">
+            <div className="relative w-48 h-48 rounded-[2rem] overflow-hidden border-2 border-[#da7756] shadow-[0_0_30px_rgba(218,119,86,0.3)] mx-auto">
               <img src={photo} alt="Selfie" className="w-full h-full object-cover transform -scale-x-100" />
               
               {/* Laser line sweeping */}
@@ -457,26 +457,25 @@ export function PublicGallery({ eventData, onBack }) {
                 transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
                 className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#6e2b8b] via-[#da7756] to-[#6e2b8b] shadow-[0_0_12px_rgba(218,119,86,1)] z-20"
               />
-              {/* Glowing grid mask */}
-              <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:10px_10px] pointer-events-none" />
+              <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(110,43,139,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(110,43,139,0.05)_1px,transparent_1px)] bg-[size:10px_10px] pointer-events-none" />
             </div>
 
             {/* Animated progress indicators */}
             <div className="space-y-2">
-              <h3 className="text-xl font-bold tracking-tight text-white flex items-center justify-center gap-2">
+              <h3 className="text-xl font-bold tracking-tight text-slate-900 dark:text-zinc-50 flex items-center justify-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#da7756] animate-ping"></span>
-                Analyzing Biometric Structure
+                Analyzing Biometrics
               </h3>
-              <p className="text-zinc-400 text-xs max-w-xs mx-auto">
+              <p className="text-slate-500 dark:text-zinc-400 text-xs max-w-xs mx-auto">
                 GWC SFace Engine is computing 512-d embeddings and matching them against event photos...
               </p>
             </div>
 
             {/* Holographic circular diagnostic wave */}
-            <div className="relative w-full py-4 flex justify-center items-center">
+            <div className="relative w-full py-2 flex justify-center items-center">
               <div className="absolute w-24 h-24 rounded-full border border-[#6e2b8b]/40 animate-ping" />
               <div className="absolute w-16 h-16 rounded-full border border-[#da7756]/40 animate-pulse" />
-              <div className="text-[10px] font-mono tracking-widest text-[#da7756] animate-pulse uppercase">Scanning SFace Embeddings</div>
+              <div className="text-[10px] font-mono tracking-widest text-[#6e2b8b] dark:text-[#da7756] animate-pulse uppercase">Scanning SFace Embeddings</div>
             </div>
           </motion.div>
         )}
@@ -488,16 +487,16 @@ export function PublicGallery({ eventData, onBack }) {
             animate={{ opacity: 1 }} 
             className="w-full"
           >
-            {/* Status bar */}
-            {matchedPhotos && (
-              <div className="bg-slate-900 dark:bg-zinc-900/60 backdrop-blur-md border border-slate-800 dark:border-zinc-800/60 text-white p-5 sm:p-6 rounded-[1.75rem] sm:rounded-[2rem] mb-8 sm:mb-12 flex flex-col md:flex-row items-center justify-between gap-6">
-                <div className="flex items-center gap-5">
-                  <div className="relative w-16 h-16 rounded-2xl overflow-hidden border-2 border-blue-500/60 shadow-[0_0_20px_rgba(59,130,246,0.3)] shrink-0">
+            {/* Header banner when matched */}
+            {!scanError && matchedPhotos && matchedPhotos.length > 0 && (
+              <div className="bg-gradient-to-r from-purple-50 via-white to-orange-50 dark:from-zinc-900 dark:to-zinc-850 text-slate-900 dark:text-zinc-50 border border-purple-100 dark:border-zinc-800 p-5 sm:p-6 rounded-[2rem] mb-8 sm:mb-12 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
+                <div className="flex items-center gap-4 text-center md:text-left">
+                  <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-[#da7756] shrink-0 shadow-md">
                     <img src={photo} alt="Your selfie" className="w-full h-full object-cover transform -scale-x-100" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-medium tracking-tight">Analysis complete</h3>
-                    <p className="text-slate-400 font-medium text-sm">
+                    <h3 className="text-xl sm:text-2xl font-semibold tracking-tight text-slate-900 dark:text-zinc-50">Here are your photos! 🎉</h3>
+                    <p className="text-slate-500 dark:text-zinc-400 font-medium text-sm">
                       Found {matchedPhotos?.length} match{matchedPhotos?.length !== 1 ? 'es' : ''}
                     </p>
                   </div>
@@ -505,7 +504,7 @@ export function PublicGallery({ eventData, onBack }) {
                 
                 <button 
                   onClick={startCamera}
-                  className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white font-semibold px-6 py-3 rounded-full border border-white/20 transition-colors flex items-center gap-2 shrink-0 cursor-pointer"
+                  className="bg-gradient-to-r from-[#6e2b8b] to-[#da7756] hover:opacity-95 text-white font-semibold px-6 py-3 rounded-full transition-all shadow-md shadow-purple-950/20 flex items-center gap-2 shrink-0 cursor-pointer"
                 >
                   <RefreshCcw className="w-4 h-4" />
                   Retake Selfie

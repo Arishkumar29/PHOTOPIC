@@ -228,7 +228,7 @@ export default function App() {
                   <span className="text-sm font-semibold text-slate-900 dark:text-zinc-100">
                     {user?.displayName || 'Admin Organizer'}
                   </span>
-                  <div className="w-7 h-7 rounded-full bg-slate-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center font-bold text-xs uppercase shadow-sm">
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#6e2b8b] to-[#da7756] text-white flex items-center justify-center font-bold text-xs uppercase shadow-sm">
                     {user?.displayName ? user.displayName[0] : 'A'}
                   </div>
                   <ChevronDown className={`w-4 h-4 text-slate-400 dark:text-zinc-500 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} />
