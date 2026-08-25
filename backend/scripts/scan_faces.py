@@ -1,19 +1,20 @@
 import os
 import sys
 import json
-import base64
 import glob
-import requests
 import cv2
 import time
 import numpy as np
 import sqlite3
-from concurrent.futures import ThreadPoolExecutor, as_completed
 
+# ─── Globals ───
 _YUNET_DETECTOR = None
 _SFACE_RECOGNIZER = None
-_API_KEY_INVALID = False
 _SQLITE_CONN = None
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  SQLite Embedding Cache
+# ═══════════════════════════════════════════════════════════════════════════════
 
 def get_sqlite_conn():
     global _SQLITE_CONN
@@ -26,92 +27,88 @@ def get_sqlite_conn():
         _SQLITE_CONN = sqlite3.connect(db_path, check_same_thread=False)
         cursor = _SQLITE_CONN.cursor()
         cursor.execute("""
-            CREATE TABLE IF NOT EXISTS face_embeddings (
+            CREATE TABLE IF NOT EXISTS face_cache (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                file_path TEXT UNIQUE,
+                file_path TEXT NOT NULL,
+                face_index INTEGER NOT NULL,
                 feat_blob BLOB NOT NULL,
-                lbp_blob BLOB NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                file_mtime REAL NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(file_path, face_index)
             );
         """)
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_file_path ON face_embeddings(file_path);")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_fc_path ON face_cache(file_path);")
         _SQLITE_CONN.commit()
         return _SQLITE_CONN
     except Exception as e:
         sys.stderr.write(f"SQLite DB init error: {str(e)}\n")
         return None
 
-def get_cached_face_data(file_path):
+
+def get_cached_faces(file_path, current_mtime):
+    """Return list of (feat_array,) tuples from cache if mtime matches, else empty list."""
     conn = get_sqlite_conn()
     if conn is None:
-        return None, None
+        return []
     try:
         cursor = conn.cursor()
-        cursor.execute("SELECT feat_blob, lbp_blob FROM face_embeddings WHERE file_path = ?", (file_path,))
-        row = cursor.fetchone()
-        if row and row[0] and row[1]:
+        cursor.execute(
+            "SELECT feat_blob, file_mtime FROM face_cache WHERE file_path = ? ORDER BY face_index",
+            (file_path,)
+        )
+        rows = cursor.fetchall()
+        if not rows:
+            return []
+        # If the file was modified since caching, invalidate
+        if abs(rows[0][1] - current_mtime) > 1.0:
+            cursor.execute("DELETE FROM face_cache WHERE file_path = ?", (file_path,))
+            conn.commit()
+            return []
+        feats = []
+        for row in rows:
             feat = np.frombuffer(row[0], dtype=np.float32).reshape(1, -1)
-            lbp = np.frombuffer(row[1], dtype=np.float32)
-            return feat, lbp
+            feats.append(feat)
+        return feats
     except Exception as e:
         sys.stderr.write(f"SQLite read error for {file_path}: {str(e)}\n")
-    return None, None
+        return []
 
-def save_cached_face_data(file_path, feat, lbp):
+
+def save_cached_faces(file_path, feats, mtime):
+    """Save list of feature vectors for all faces in a file."""
     conn = get_sqlite_conn()
-    if conn is None or feat is None or lbp is None:
+    if conn is None:
         return
     try:
         cursor = conn.cursor()
-        feat_blob = feat.astype(np.float32).tobytes()
-        lbp_blob = lbp.astype(np.float32).tobytes()
-        cursor.execute("""
-            INSERT OR REPLACE INTO face_embeddings (file_path, feat_blob, lbp_blob)
-            VALUES (?, ?, ?)
-        """, (file_path, feat_blob, lbp_blob))
+        cursor.execute("DELETE FROM face_cache WHERE file_path = ?", (file_path,))
+        for idx, feat in enumerate(feats):
+            feat_blob = feat.astype(np.float32).tobytes()
+            cursor.execute(
+                "INSERT INTO face_cache (file_path, face_index, feat_blob, file_mtime) VALUES (?, ?, ?, ?)",
+                (file_path, idx, feat_blob, mtime)
+            )
         conn.commit()
     except Exception as e:
         sys.stderr.write(f"SQLite save error for {file_path}: {str(e)}\n")
 
-def get_mime_type(filename):
-    ext = filename.lower().split('.')[-1]
-    if ext in ['jpg', 'jpeg']:
-        return 'image/jpeg'
-    elif ext == 'png':
-        return 'image/png'
-    elif ext == 'webp':
-        return 'image/webp'
-    return 'image/jpeg'
 
-def get_resized_image_base64(img_path, max_size=1024):
-    try:
-        img = cv2.imread(img_path)
-        if img is None:
-            return None, None
-        height, width = img.shape[:2]
-        if max(height, width) > max_size:
-            scale = max_size / max(height, width)
-            img = cv2.resize(img, (int(width * scale), int(height * scale)), interpolation=cv2.INTER_AREA)
-        
-        success, encoded_img = cv2.imencode('.jpg', img)
-        if not success:
-            return None, None
-        return base64.b64encode(encoded_img.tobytes()).decode('utf-8'), 'image/jpeg'
-    except Exception as e:
-        sys.stderr.write(f"Error resizing {img_path}: {str(e)}\n")
-        return None, None
+# ═══════════════════════════════════════════════════════════════════════════════
+#  YuNet Face Detector  (SCRFD-like DNN in OpenCV)
+# ═══════════════════════════════════════════════════════════════════════════════
 
 def get_yunet_detector(width, height):
     global _YUNET_DETECTOR
     model_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "models"))
     os.makedirs(model_dir, exist_ok=True)
     model_path = os.path.join(model_dir, "face_detection_yunet_2023mar.onnx")
-    
+
     if not os.path.exists(model_path):
         try:
-            sys.stderr.write("Downloading YuNet ONNX model for high-accuracy face detection...\n")
+            import requests
+            sys.stderr.write("Downloading YuNet ONNX model…\n")
             url = "https://github.com/opencv/opencv_zoo/raw/main/models/face_detection_yunet/face_detection_yunet_2023mar.onnx"
-            r = requests.get(url, timeout=15)
+            r = requests.get(url, timeout=30)
             with open(model_path, "wb") as f:
                 f.write(r.content)
         except Exception as e:
@@ -120,14 +117,14 @@ def get_yunet_detector(width, height):
 
     if not os.path.exists(model_path):
         return None
-        
+
     try:
         if _YUNET_DETECTOR is None:
             _YUNET_DETECTOR = cv2.FaceDetectorYN.create(
                 model=model_path,
                 config="",
                 input_size=(width, height),
-                score_threshold=0.45,
+                score_threshold=0.6,   # higher threshold = fewer false detections
                 nms_threshold=0.3,
                 top_k=5000
             )
@@ -135,21 +132,27 @@ def get_yunet_detector(width, height):
             _YUNET_DETECTOR.setInputSize((width, height))
         return _YUNET_DETECTOR
     except Exception as e:
-        sys.stderr.write(f"Failed to initialize/configure FaceDetectorYN: {str(e)}\n")
+        sys.stderr.write(f"Failed to init YuNet: {str(e)}\n")
         return None
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  SFace Recognizer  (128-d / 512-d ArcFace-like embeddings)
+# ═══════════════════════════════════════════════════════════════════════════════
 
 def get_sface_recognizer():
     global _SFACE_RECOGNIZER
     if _SFACE_RECOGNIZER is not None:
         return _SFACE_RECOGNIZER
-        
+
     model_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "models"))
     os.makedirs(model_dir, exist_ok=True)
     model_path = os.path.join(model_dir, "face_recognition_sface_2021dec.onnx")
-    
+
     if not os.path.exists(model_path):
         try:
-            sys.stderr.write("Downloading SFace ONNX model for high-accuracy face matching...\n")
+            import requests
+            sys.stderr.write("Downloading SFace ONNX model…\n")
             url = "https://github.com/opencv/opencv_zoo/raw/main/models/face_recognition_sface/face_recognition_sface_2021dec.onnx"
             r = requests.get(url, stream=True, timeout=30)
             with open(model_path, "wb") as f:
@@ -162,464 +165,390 @@ def get_sface_recognizer():
 
     if not os.path.exists(model_path):
         return None
-        
+
     try:
         _SFACE_RECOGNIZER = cv2.FaceRecognizerSF.create(model_path, "")
         return _SFACE_RECOGNIZER
     except Exception as e:
-        sys.stderr.write(f"Failed to initialize FaceRecognizerSF: {str(e)}\n")
+        sys.stderr.write(f"Failed to init SFace: {str(e)}\n")
         return None
 
-def normalize_lighting(img):
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  Image Preprocessing Helpers
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def preprocess_for_detection(img, max_size=1024):
+    """Resize for detection speed, return (resized_img, scale)."""
+    h, w = img.shape[:2]
+    scale = 1.0
+    if max(h, w) > max_size:
+        scale = max_size / max(h, w)
+        img = cv2.resize(img, (int(w * scale), int(h * scale)), interpolation=cv2.INTER_AREA)
+    return img, scale
+
+
+def enhance_image(img):
+    """Apply CLAHE + bilateral filter for better face detection under poor lighting."""
     try:
-        ycrcb = cv2.cvtColor(img, cv2.COLOR_BGR2YCrCb)
-        channels = list(cv2.split(ycrcb))
-        channels[0] = cv2.equalizeHist(channels[0])
-        ycrcb = cv2.merge(channels)
-        img_eq = cv2.cvtColor(ycrcb, cv2.COLOR_YCrCb2BGR)
-        
-        gamma = 1.1
-        invGamma = 1.0 / gamma
-        table = np.array([((i / 255.0) ** invGamma) * 255 for i in range(256)]).astype("uint8")
-        normalized = cv2.LUT(img_eq, table)
-        return normalized
-    except Exception as e:
-        sys.stderr.write(f"Lighting normalization failed: {str(e)}\n")
+        lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
+        l, a, b = cv2.split(lab)
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+        l = clahe.apply(l)
+        lab = cv2.merge([l, a, b])
+        enhanced = cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
+        return enhanced
+    except Exception:
         return img
 
-def get_vectorized_lbp(gray):
-    h, w = gray.shape
-    img_center = gray[1:h-1, 1:w-1]
-    lbp = np.zeros(img_center.shape, dtype=np.uint8)
-    
-    lbp |= ((gray[0:h-2, 0:w-2] >= img_center).astype(np.uint8) << 7)
-    lbp |= ((gray[0:h-2, 1:w-1] >= img_center).astype(np.uint8) << 6)
-    lbp |= ((gray[0:h-2, 2:w]   >= img_center).astype(np.uint8) << 5)
-    lbp |= ((gray[1:h-1, 2:w]   >= img_center).astype(np.uint8) << 4)
-    lbp |= ((gray[2:h,   2:w]   >= img_center).astype(np.uint8) << 3)
-    lbp |= ((gray[2:h,   1:w-1] >= img_center).astype(np.uint8) << 2)
-    lbp |= ((gray[2:h,   0:w-2] >= img_center).astype(np.uint8) << 1)
-    lbp |= ((gray[1:h-1, 0:w-2] >= img_center).astype(np.uint8) << 0)
-    
-    return lbp
 
-def extract_grid_lbp_features(aligned_img):
-    try:
-        if len(aligned_img.shape) == 3:
-            gray = cv2.cvtColor(aligned_img, cv2.COLOR_BGR2GRAY)
+# ═══════════════════════════════════════════════════════════════════════════════
+#  Multi-scale Face Detection
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def detect_faces_multiscale(img):
+    """Run YuNet at multiple scales to catch faces at various distances.
+    Returns list of face arrays in the ORIGINAL image coordinate system."""
+    h, w = img.shape[:2]
+    all_faces = []
+    scales = [1.0]
+
+    # Add a zoomed-in pass if image is large (catches small distant faces)
+    if max(h, w) > 1200:
+        scales.append(1.5)
+    if max(h, w) > 2000:
+        scales.append(2.0)
+
+    for s in scales:
+        if s == 1.0:
+            det_img, down_scale = preprocess_for_detection(img, max_size=1024)
         else:
-            gray = aligned_img
-            
-        lbp = get_vectorized_lbp(gray)
-        grid_rows, grid_cols = 7, 7
-        h, w = lbp.shape
-        block_h = h // grid_rows
-        block_w = w // grid_cols
-        
-        features = []
-        for r in range(grid_rows):
-            for c in range(grid_cols):
-                y1 = r * block_h
-                y2 = (r + 1) * block_h
-                x1 = c * block_w
-                x2 = (c + 1) * block_w
-                
-                block = lbp[y1:y2, x1:x2]
-                hist, _ = np.histogram(block, bins=256, range=(0, 256))
-                hist = hist.astype("float32")
-                hist /= (hist.sum() + 1e-6)
-                features.append(hist)
-                
-        return np.concatenate(features)
-    except Exception as e:
-        sys.stderr.write(f"LBP grid extraction failed: {str(e)}\n")
-        return None
+            # Crop center region and upscale for small-face detection
+            ch, cw = int(h * 0.7), int(w * 0.7)
+            y_off, x_off = (h - ch) // 2, (w - cw) // 2
+            crop = img[y_off:y_off + ch, x_off:x_off + cw]
+            det_img = cv2.resize(crop, (int(cw * s), int(ch * s)), interpolation=cv2.INTER_LINEAR)
+            down_scale = 1.0  # will adjust manually
 
-def align_and_warp_face(img, face, desired_width=512, desired_height=512):
-    try:
-        re_x, re_y = face[4], face[5]
-        le_x, le_y = face[6], face[7]
-        
-        dy = le_y - re_y
-        dx = le_x - re_x
-        angle = np.degrees(np.arctan2(dy, dx))
-        
-        eyes_center = (float(re_x + le_x) / 2.0, float(re_y + le_y) / 2.0)
-        dist = np.sqrt(dx**2 + dy**2)
-        desired_dist = 0.30
-        desired_pixel_dist = desired_width * desired_dist
-        scale = desired_pixel_dist / dist
-        
-        M = cv2.getRotationMatrix2D(eyes_center, angle, scale)
-        tX = desired_width * 0.5
-        tY = desired_height * 0.35
-        M[0, 2] += (tX - eyes_center[0])
-        M[1, 2] += (tY - eyes_center[1])
-        
-        warped = cv2.warpAffine(img, M, (desired_width, desired_height), flags=cv2.INTER_CUBIC)
-        return warped
-    except Exception as e:
-        sys.stderr.write(f"Face alignment warping failed: {str(e)}\n")
-        return None
+        det_h, det_w = det_img.shape[:2]
+        detector = get_yunet_detector(det_w, det_h)
+        if detector is None:
+            continue
 
-def crop_face_from_selfie(img_path):
-    try:
-        img = cv2.imread(img_path)
-        if img is None:
-            return None, None
-            
-        height, width = img.shape[:2]
-        detector = get_yunet_detector(width, height)
-        
-        if detector is not None:
-            retval, faces = detector.detect(img)
-            if faces is not None and len(faces) > 0:
-                faces = sorted(faces, key=lambda f: f[2] * f[3], reverse=True)
-                warped = align_and_warp_face(img, faces[0], 512, 512)
-                
-                if warped is not None:
-                    success, encoded_img = cv2.imencode('.jpg', warped)
-                    if success:
-                        sys.stderr.write("Successfully aligned and warped face from selfie using YuNet landmarks.\n")
-                        return base64.b64encode(encoded_img.tobytes()).decode('utf-8'), 'image/jpeg'
-                
-                x, y, w, h = faces[0][0:4].astype(int)
-                pad_x = int(w * 0.25)
-                pad_y = int(h * 0.25)
-                
-                x1 = max(0, x - pad_x)
-                y1 = max(0, y - pad_y)
-                x2 = min(width, x + w + pad_x)
-                y2 = min(height, y + h + pad_y)
-                
-                cropped = img[y1:y2, x1:x2]
-                max_size = 512
-                c_height, c_width = cropped.shape[:2]
-                if max(c_height, c_width) > max_size:
-                    scale = max_size / max(c_height, c_width)
-                    cropped = cv2.resize(cropped, (int(c_width * scale), int(c_height * scale)), interpolation=cv2.INTER_AREA)
-                
-                success, encoded_img = cv2.imencode('.jpg', cropped)
-                if success:
-                    sys.stderr.write("Successfully cropped face from selfie locally using YuNet DNN (Fallback box).\n")
-                    return base64.b64encode(encoded_img.tobytes()).decode('utf-8'), 'image/jpeg'
-    except Exception as e:
-        sys.stderr.write(f"Selfie face cropping error: {str(e)}\n")
+        _, faces = detector.detect(det_img)
+        if faces is None or len(faces) == 0:
+            continue
+
+        for face in faces:
+            f = face.copy()
+            if s == 1.0:
+                if down_scale != 1.0:
+                    f[0:14] = f[0:14] / down_scale
+            else:
+                # Map coordinates back to original image space
+                f[0:14] = f[0:14] / s
+                # Add offsets for center-crop
+                ch2, cw2 = int(h * 0.7), int(w * 0.7)
+                y_off2, x_off2 = (h - ch2) // 2, (w - cw2) // 2
+                f[0] += x_off2  # x
+                f[1] += y_off2  # y
+                f[4] += x_off2; f[5] += y_off2   # right eye
+                f[6] += x_off2; f[7] += y_off2   # left eye
+                f[8] += x_off2; f[9] += y_off2   # nose
+                f[10] += x_off2; f[11] += y_off2  # right mouth
+                f[12] += x_off2; f[13] += y_off2  # left mouth
+
+            all_faces.append(f)
+
+    if len(all_faces) == 0:
+        return []
+
+    # NMS dedup: remove overlapping faces from multi-scale
+    return nms_faces(all_faces, iou_threshold=0.4)
+
+
+def nms_faces(faces, iou_threshold=0.4):
+    """Simple IoU-based NMS to remove duplicate detections across scales."""
+    if len(faces) <= 1:
+        return faces
+
+    boxes = []
+    scores = []
+    for f in faces:
+        x, y, w, h = f[0], f[1], f[2], f[3]
+        boxes.append([x, y, x + w, y + h])
+        scores.append(f[14] if len(f) > 14 else 0.9)
+
+    boxes = np.array(boxes, dtype=np.float32)
+    scores = np.array(scores, dtype=np.float32)
+    order = scores.argsort()[::-1]
+
+    keep = []
+    while len(order) > 0:
+        i = order[0]
+        keep.append(i)
+
+        xx1 = np.maximum(boxes[i, 0], boxes[order[1:], 0])
+        yy1 = np.maximum(boxes[i, 1], boxes[order[1:], 1])
+        xx2 = np.minimum(boxes[i, 2], boxes[order[1:], 2])
+        yy2 = np.minimum(boxes[i, 3], boxes[order[1:], 3])
+
+        inter = np.maximum(0, xx2 - xx1) * np.maximum(0, yy2 - yy1)
+        area_i = (boxes[i, 2] - boxes[i, 0]) * (boxes[i, 3] - boxes[i, 1])
+        area_j = (boxes[order[1:], 2] - boxes[order[1:], 0]) * (boxes[order[1:], 3] - boxes[order[1:], 1])
+        iou = inter / (area_i + area_j - inter + 1e-6)
+
+        remaining = np.where(iou <= iou_threshold)[0]
+        order = order[remaining + 1]
+
+    return [faces[i] for i in keep]
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  Extract ALL face embeddings from a single image
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def extract_all_face_features(img, recognizer):
+    """Detect all faces in an image and return list of SFace feature vectors."""
+    faces = detect_faces_multiscale(img)
+    if not faces:
+        # Try with enhanced image (CLAHE)
+        enhanced = enhance_image(img)
+        faces = detect_faces_multiscale(enhanced)
+        if not faces:
+            return []
+
+    feats = []
+    for face in faces:
+        try:
+            aligned = recognizer.alignCrop(img, face)
+            feat = recognizer.feature(aligned)
+            feats.append(feat)
+        except Exception:
+            continue
+    return feats
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  Extract MULTIPLE embeddings from selfie (flipped + enhanced variants)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def extract_selfie_features(selfie_img, recognizer):
+    """Extract robust feature set from selfie: original + enhanced + flipped.
+    Returns list of feature vectors for robust matching."""
+    feats = []
+
+    # Original
+    orig_feats = extract_all_face_features(selfie_img, recognizer)
+    if not orig_feats:
+        return []
+    feats.extend(orig_feats)
+
+    # Enhanced (CLAHE) version
+    enhanced = enhance_image(selfie_img)
+    enh_feats = extract_all_face_features(enhanced, recognizer)
+    feats.extend(enh_feats)
+
+    # Horizontally flipped version (helps with asymmetric faces)
+    flipped = cv2.flip(selfie_img, 1)
+    flip_feats = extract_all_face_features(flipped, recognizer)
+    feats.extend(flip_feats)
+
+    return feats
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  Cosine Similarity (NumPy)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def cosine_similarity(a, b):
+    """Compute cosine similarity between two feature vectors."""
+    a_flat = a.flatten()
+    b_flat = b.flatten()
+    dot = np.dot(a_flat, b_flat)
+    norm = np.linalg.norm(a_flat) * np.linalg.norm(b_flat)
+    if norm < 1e-10:
+        return 0.0
+    return float(dot / norm)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  Main Face Matching Engine  (SFace + OpenCV ONLY)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Strict thresholds — tuned for SFace to MINIMIZE false positives
+# SFace cosine: same person typically > 0.55, different person < 0.40
+# SFace L2:     same person typically < 1.05, different person > 1.30
+COSINE_HIGH    = 0.55    # very confident: clearly the same person
+COSINE_MEDIUM  = 0.48    # confident: same person at different angle/lighting
+L2_HIGH        = 1.05    # L2 must also confirm for high confidence
+L2_MEDIUM      = 1.15    # L2 upper bound for medium confidence
+
+def match_faces(selfie_path, image_paths):
+    """
+    Pure SFace + OpenCV face matching engine — STRICT accuracy mode.
     
-    return get_resized_image_base64(img_path, max_size=1024)
+    Strategy:
+    1. Extract PRIMARY selfie embedding only (single canonical face)
+    2. For each candidate image, extract ALL face embeddings
+    3. Use DUAL-METRIC verification: both cosine AND L2 must agree
+    4. Only return matches where both metrics confirm the identity
+    """
+    sys.stderr.write(f"[SFace Engine] Starting STRICT face matching across {len(image_paths)} images…\n")
+    start_time = time.time()
 
-def load_dotenv():
-    env_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '.env'))
-    if os.path.exists(env_path):
-        with open(env_path, 'r', encoding='utf-8') as f:
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith('#') and '=' in line:
-                    key, val = line.split('=', 1)
-                    key = key.strip()
-                    val = val.strip().strip('"').strip("'")
-                    os.environ[key] = val
+    recognizer = get_sface_recognizer()
+    if recognizer is None:
+        sys.stderr.write("[SFace Engine] ERROR: Could not initialize SFace recognizer\n")
+        return []
 
-def local_face_recognition_fallback(selfie_path, image_paths):
-    sys.stderr.write(f"Running high-accuracy local face recognition matching across {len(image_paths)} images...\n")
-    matched_images = []
-    
+    # Step 1: Extract PRIMARY selfie face embedding ONLY
     selfie_img = cv2.imread(selfie_path)
     if selfie_img is None:
+        sys.stderr.write(f"[SFace Engine] ERROR: Could not read selfie at {selfie_path}\n")
         return []
-        
-    h1, w1 = selfie_img.shape[:2]
-    selfie_detector = get_yunet_detector(w1, h1)
-    recognizer = get_sface_recognizer()
-    
-    if selfie_detector is None or recognizer is None:
+
+    h, w = selfie_img.shape[:2]
+    detector = get_yunet_detector(w, h)
+    if detector is None:
+        sys.stderr.write("[SFace Engine] ERROR: Could not initialize face detector\n")
         return []
-        
-    _, selfie_faces = selfie_detector.detect(selfie_img)
+
+    _, selfie_faces = detector.detect(selfie_img)
     if selfie_faces is None or len(selfie_faces) == 0:
-        return []
-        
-    selfie_face = selfie_faces[0]
+        # Try enhanced
+        enhanced = enhance_image(selfie_img)
+        _, selfie_faces = detector.detect(enhanced)
+        if selfie_faces is None or len(selfie_faces) == 0:
+            sys.stderr.write("[SFace Engine] ERROR: No face detected in selfie\n")
+            return []
+
+    # Use largest face from selfie (most prominent)
+    selfie_faces_sorted = sorted(selfie_faces, key=lambda f: f[2] * f[3], reverse=True)
+    selfie_face = selfie_faces_sorted[0]
     selfie_aligned = recognizer.alignCrop(selfie_img, selfie_face)
     selfie_feat = recognizer.feature(selfie_aligned)
-    
-    selfie_normalized = normalize_lighting(selfie_aligned)
-    selfie_lbp = extract_grid_lbp_features(selfie_normalized)
-    
-    start_time = time.time()
+
+    sys.stderr.write(f"[SFace Engine] Extracted 1 primary selfie embedding (strict mode)\n")
+
+    # Step 2: Match against each candidate image
+    matched_images = []
+
     for idx, img_path in enumerate(image_paths):
         try:
             if "temp_selfie_" in os.path.basename(img_path):
                 continue
-                
-            target_feat, target_lbp = get_cached_face_data(img_path)
-            
-            if target_feat is None or target_lbp is None:
-                orig_img = cv2.imread(img_path)
-                if orig_img is None:
+
+            # Check cache first
+            mtime = os.path.getmtime(img_path)
+            cached_feats = get_cached_faces(img_path, mtime)
+
+            if cached_feats:
+                target_feats = cached_feats
+            else:
+                target_img = cv2.imread(img_path)
+                if target_img is None:
                     continue
-                
-                orig_h, orig_w = orig_img.shape[:2]
-                max_detect_size = 1024
-                scale = 1.0
-                if max(orig_h, orig_w) > max_detect_size:
-                    scale = max_detect_size / max(orig_h, orig_w)
-                    detect_img = cv2.resize(orig_img, (int(orig_w * scale), int(orig_h * scale)), interpolation=cv2.INTER_AREA)
-                else:
-                    detect_img = orig_img.copy()
-                    
-                detect_h, detect_w = detect_img.shape[:2]
-                detector = get_yunet_detector(detect_w, detect_h)
-                
-                if detector is not None:
-                    retval, faces = detector.detect(detect_img)
-                    if faces is not None and len(faces) > 0:
-                        scaled_face = faces[0].copy()
-                        if scale != 1.0:
-                            scaled_face[0:14] = faces[0][0:14] / scale
-                        
-                        target_aligned = recognizer.alignCrop(orig_img, scaled_face)
-                        target_feat = recognizer.feature(target_aligned)
-                        target_normalized = normalize_lighting(target_aligned)
-                        target_lbp = extract_grid_lbp_features(target_normalized)
-                        
-                        if target_feat is not None and target_lbp is not None:
-                            save_cached_face_data(img_path, target_feat, target_lbp)
-                            
-            if target_feat is None or target_lbp is None:
-                continue
-                
-            cosine_score = recognizer.match(selfie_feat, target_feat, cv2.FaceRecognizerSF_FR_COSINE)
-            l2_score = recognizer.match(selfie_feat, target_feat, cv2.FaceRecognizerSF_FR_NORM_L2)
-            
-            eps = 1e-10
-            chi_square = np.sum(((selfie_lbp - target_lbp) ** 2) / (selfie_lbp + target_lbp + eps))
-            lbp_sim = 1.0 / (1.0 + chi_square)
-            
-            is_match = False
-            if (cosine_score >= 0.363 and l2_score <= 1.128):
-                is_match = True
-            elif (cosine_score >= 0.32 and l2_score <= 1.25 and lbp_sim >= 0.40):
-                is_match = True
-            
-            if is_match:
+
+                target_feats = extract_all_face_features(target_img, recognizer)
+                if not target_feats:
+                    continue
+
+                # Cache the embeddings
+                save_cached_faces(img_path, target_feats, mtime)
+
+            # Step 3: DUAL-METRIC matching — both cosine AND L2 must agree
+            best_cosine = -1.0
+            best_l2 = 999.0
+
+            for t_feat in target_feats:
+                cos_score = cosine_similarity(selfie_feat, t_feat)
+                l2_score = float(recognizer.match(selfie_feat, t_feat, cv2.FaceRecognizerSF_FR_NORM_L2))
+
+                # Track best pair
+                if cos_score > best_cosine:
+                    best_cosine = cos_score
+                    best_l2 = l2_score
+
+            # Step 4: STRICT dual-threshold decision
+            confidence = None
+            if best_cosine >= COSINE_HIGH and best_l2 <= L2_HIGH:
+                confidence = "high"
+            elif best_cosine >= COSINE_MEDIUM and best_l2 <= L2_MEDIUM:
+                confidence = "medium"
+
+            if confidence:
                 matched_images.append({
                     "name": os.path.basename(img_path),
                     "path": img_path,
-                    "confidence": "high" if cosine_score > 0.42 and l2_score < 1.0 and lbp_sim > 0.55 else "medium"
+                    "confidence": confidence,
+                    "score": round(best_cosine, 4)
                 })
+
+            # Progress logging every 50 images
+            if (idx + 1) % 50 == 0:
+                elapsed = time.time() - start_time
+                sys.stderr.write(
+                    f"[SFace Engine] Processed {idx + 1}/{len(image_paths)} images "
+                    f"({elapsed:.1f}s, {len(matched_images)} matches so far)\n"
+                )
+
         except Exception as e:
-            sys.stderr.write(f"Error comparing face in {img_path} locally: {str(e)}\n")
-            
-    sys.stderr.write(f"Local face matching completed in {time.time() - start_time:.2f} seconds. Found {len(matched_images)} matches.\n")
+            sys.stderr.write(f"[SFace Engine] Error processing {img_path}: {str(e)}\n")
+
+    elapsed = time.time() - start_time
+    sys.stderr.write(
+        f"[SFace Engine] ✓ Completed in {elapsed:.2f}s — "
+        f"{len(matched_images)} matches from {len(image_paths)} images\n"
+    )
+
+    # Sort by score descending (best matches first)
+    matched_images.sort(key=lambda m: m.get("score", 0), reverse=True)
+
     return matched_images
 
-def process_chunk_images(selfie_mime, selfie_data, chunk_paths, api_key, headers, model):
-    global _API_KEY_INVALID
-    if _API_KEY_INVALID:
-        return None, "API key marked invalid"
-        
-    parts = []
-    prompt = (
-        "You are an advanced face recognition assistant. "
-        "The first image labeled 'Reference Face' is a photo of the person we are searching for. "
-        "You will be given multiple other event photos, each labeled with its exact filename. "
-        "Analyze each event photo carefully to determine if the person from the 'Reference Face' appears in it. "
-        "Pay close attention to facial features (eyes, nose, mouth shape, face shape, eyebrows, facial hair) "
-        "and ignore changes in expression, lighting, glasses, or camera angle. "
-        "Identify all event photos that contain a match. "
-        "Output a JSON object with a single field 'matches', which is a list of matched items. "
-        "Each matched item must contain 'filename' (the exact filename of the matched photo) and "
-        "'confidence' (string: 'high', 'medium', or 'low')."
-    )
-    parts.append({"text": prompt})
-    parts.append({"text": "--- Reference Face ---"})
-    parts.append({"inlineData": {"mimeType": selfie_mime, "data": selfie_data}})
-    
-    for img_path in chunk_paths:
-        filename = os.path.basename(img_path)
-        img_data, img_mime = get_resized_image_base64(img_path, max_size=768)
-        if img_data:
-            parts.append({"text": f"--- Event Photo: {filename} ---"})
-            parts.append({"inlineData": {"mimeType": img_mime, "data": img_data}})
 
-    payload = {
-        "contents": [{"parts": parts}],
-        "generationConfig": {
-            "responseMimeType": "application/json",
-            "responseSchema": {
-                "type": "OBJECT",
-                "properties": {
-                    "matches": {
-                        "type": "ARRAY",
-                        "items": {
-                            "type": "OBJECT",
-                            "properties": {
-                                "filename": {"type": "STRING"},
-                                "confidence": {"type": "STRING", "enum": ["high", "medium", "low"]}
-                            },
-                            "required": ["filename", "confidence"]
-                        }
-                    }
-                },
-                "required": ["matches"]
-            }
-        }
-    }
-
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
-    try:
-        sys.stderr.write(f"Trying chunk API call with model: {model} for chunk of size {len(chunk_paths)}...\n")
-        response = requests.post(url, headers=headers, json=payload, timeout=30)
-        
-        if response.status_code == 200:
-            result_json = response.json()
-            candidates = result_json.get("candidates", [])
-            if candidates:
-                text_res = candidates[0]["content"]["parts"][0]["text"]
-                data = json.loads(text_res)
-                
-                matched_images = []
-                for item in data.get("matches", []):
-                    matched_path = next((p for p in chunk_paths if os.path.basename(p) == item["filename"]), None)
-                    if matched_path:
-                        matched_images.append({
-                            "name": item["filename"],
-                            "path": matched_path,
-                            "confidence": item["confidence"]
-                        })
-                return matched_images, None
-            return [], "No candidates returned"
-        elif response.status_code in (400, 401, 403):
-            try:
-                err_detail = response.json()
-                err_msg = err_detail.get("error", {}).get("message", "")
-                if "API key" in err_msg or "not valid" in err_msg or "INVALID_ARGUMENT" in err_msg:
-                    _API_KEY_INVALID = True
-            except Exception:
-                pass
-            return None, f"Auth Error {response.status_code}: {response.text}"
-        elif response.status_code == 429:
-            return None, "429 Rate Limit"
-        else:
-            return None, f"HTTP Error {response.status_code}: {response.text}"
-    except Exception as e:
-        return None, str(e)
-
-def process_chunk_with_model_fallback(selfie_mime, selfie_data, chunk_paths, api_key, headers):
-    model_candidates = [
-        "gemini-3.6-flash",
-        "gemini-2.5-flash",
-        "gemini-3.1-pro-preview"
-    ]
-    last_err = None
-    for model in model_candidates:
-        matched_images, error = process_chunk_images(selfie_mime, selfie_data, chunk_paths, api_key, headers, model)
-        if matched_images is not None:
-            return matched_images
-        last_err = error
-        if _API_KEY_INVALID:
-            break
-        time.sleep(1)
-    return None
-
-def chunk_list(lst, n):
-    for i in range(0, len(lst), n):
-        yield lst[i:i + n]
-
-def process_all_images_concurrently(selfie_mime, selfie_data, image_paths, api_key, headers):
-    chunk_size = 4
-    chunks = list(chunk_list(image_paths, chunk_size))
-    matched_images = []
-    failed_chunks = []
-    
-    with ThreadPoolExecutor(max_workers=3) as executor:
-        future_to_chunk = {
-            executor.submit(
-                process_chunk_with_model_fallback,
-                selfie_mime,
-                selfie_data,
-                chunk,
-                api_key,
-                headers
-            ): chunk for chunk in chunks
-        }
-        
-        for future in as_completed(future_to_chunk):
-            chunk = future_to_chunk[future]
-            try:
-                result = future.result()
-                if result is not None:
-                    matched_images.extend(result)
-                else:
-                    failed_chunks.append(chunk)
-            except Exception as e:
-                failed_chunks.append(chunk)
-                
-    return matched_images, failed_chunks
+# ═══════════════════════════════════════════════════════════════════════════════
+#  Main Entry Point
+# ═══════════════════════════════════════════════════════════════════════════════
 
 def main():
-    load_dotenv()
-    
     if len(sys.argv) < 3:
-        print(json.dumps({"error": "Usage: python scan_faces.py <path_to_selfie> <path_to_bulk_dir>"}))
+        print(json.dumps({"error": "Usage: python scan_faces.py <selfie_path> <bulk_dir>"}))
         sys.exit(1)
 
     selfie_path = sys.argv[1]
     bulk_dir = sys.argv[2]
 
     if not os.path.exists(selfie_path):
-        print(json.dumps({"error": f"Selfie image not found at {selfie_path}"}))
+        print(json.dumps({"error": f"Selfie not found: {selfie_path}"}))
         sys.exit(1)
 
     if not os.path.exists(bulk_dir):
-        print(json.dumps({"error": f"Bulk directory not found at {bulk_dir}"}))
+        print(json.dumps({"error": f"Bulk directory not found: {bulk_dir}"}))
         sys.exit(1)
 
-    valid_extensions = ["*.jpg", "*.jpeg", "*.png", "*.webp"]
+    # Collect all valid image files
+    valid_extensions = ["*.jpg", "*.jpeg", "*.png", "*.webp", "*.JPG", "*.JPEG", "*.PNG", "*.WEBP"]
     image_paths = []
     for ext in valid_extensions:
         image_paths.extend(glob.glob(os.path.join(bulk_dir, ext)))
-        image_paths.extend(glob.glob(os.path.join(bulk_dir, ext.upper())))
 
     image_paths = list(set(image_paths))
     image_paths = [p for p in image_paths if "temp_selfie_" not in os.path.basename(p)]
+    image_paths = sorted(image_paths)
 
     if not image_paths:
         print(json.dumps({"matches": [], "message": "No images found in bulk directory."}))
         sys.exit(0)
 
-    image_paths = sorted(image_paths)
-    api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
-    
-    api_valid = False
-    if api_key and not api_key.startswith("MY_GEMINI_API_KEY") and len(api_key.strip()) > 20:
-        api_valid = True
+    # Run SFace + OpenCV matching
+    matches = match_faces(selfie_path, image_paths)
 
-    if not api_valid:
-        matched_images = local_face_recognition_fallback(selfie_path, image_paths)
-        print(json.dumps({"matches": matched_images}))
-        sys.exit(0)
+    # Remove internal score from output
+    output_matches = [{"name": m["name"], "path": m["path"], "confidence": m["confidence"]} for m in matches]
+    print(json.dumps({"matches": output_matches}))
 
-    selfie_data, selfie_mime = crop_face_from_selfie(selfie_path)
-    if not selfie_data:
-        selfie_data, selfie_mime = get_resized_image_base64(selfie_path, max_size=512)
-        if not selfie_data:
-            print(json.dumps({"error": "Failed to read or crop selfie image."}))
-            sys.exit(1)
-
-    headers = {"Content-Type": "application/json"}
-    matched_images, failed_chunks = process_all_images_concurrently(selfie_mime, selfie_data, image_paths, api_key, headers)
-
-    if failed_chunks:
-        flat_failed_paths = [p for chunk in failed_chunks for p in chunk]
-        local_matches = local_face_recognition_fallback(selfie_path, flat_failed_paths)
-        existing_names = {m["name"] for m in matched_images}
-        for lm in local_matches:
-            if lm["name"] not in existing_names:
-                matched_images.append(lm)
-
-    print(json.dumps({"matches": matched_images}))
 
 if __name__ == "__main__":
     main()

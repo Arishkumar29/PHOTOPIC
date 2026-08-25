@@ -127,48 +127,17 @@ export const scanFaces = async (req: Request, res: Response) => {
     }
 
     let resultMatches: ScanMatch[] = [];
-    let nodeScanSuccess = false;
 
-    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
-    const isApiValid = apiKey && !apiKey.startsWith("MY_GEMINI_API_KEY") && apiKey.length > 20;
-
-    if (isApiValid && fs.existsSync(scanBulkDir)) {
-      try {
-        const validExtensions = [".jpg", ".jpeg", ".png", ".webp"];
-        const files = fs.readdirSync(scanBulkDir);
-        const imageFiles = files
-          .filter(f => {
-            const fileExt = path.extname(f).toLowerCase();
-            return validExtensions.includes(fileExt) && !f.startsWith("temp_selfie_");
-          })
-          .map(f => ({
-            name: f,
-            path: path.join(scanBulkDir, f)
-          }));
-
-        if (imageFiles.length > 0) {
-          console.log(`Running fast Node-based Gemini scan for ${imageFiles.length} images...`);
-          const matches = await scanFacesWithGeminiNode(apiKey, mimeType, base64Data, imageFiles);
-          resultMatches = matches;
-          nodeScanSuccess = true;
-          console.log(`Node-based scan completed successfully. Found ${resultMatches.length} matches.`);
-        }
-      } catch (err: any) {
-        console.error("Fast Node-based Gemini scan failed. Falling back to Python subprocess...", err.message || err);
-      }
+    // Always use Python SFace + OpenCV engine (accurate, free, no API key needed)
+    console.log(`Running SFace + OpenCV face scan for event ${eventId} (${fs.existsSync(scanBulkDir) ? fs.readdirSync(scanBulkDir).length : 0} files)...`);
+    const result = await runPythonScan(tempSelfiePath, scanBulkDir);
+    if (result.error) {
+      throw new Error(result.error);
     }
-
-    if (!nodeScanSuccess) {
-      console.log(`Spawning python scan for event ${eventId}...`);
-      const result = await runPythonScan(tempSelfiePath, scanBulkDir);
-      if (result.error) {
-        throw new Error(result.error);
-      }
-      resultMatches = (result.matches || []).map((m: any) => ({
-        name: m.name,
-        confidence: m.confidence
-      }));
-    }
+    resultMatches = (result.matches || []).map((m: any) => ({
+      name: m.name,
+      confidence: m.confidence
+    }));
 
     let matchedUrls: string[] = [];
     if (event.folderId === 'local_upload') {
