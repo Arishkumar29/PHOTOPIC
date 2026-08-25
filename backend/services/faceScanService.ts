@@ -51,7 +51,7 @@ async function callGeminiApiNode(
   chunkFiles: { name: string; path: string }[]
 ): Promise<any> {
   const parts: any[] = [];
-  const prompt = `You are an advanced face recognition assistant. The first image labeled 'Reference Face' is a photo of the person we are searching for. You will be given multiple other event photos, each labeled with its exact filename. Analyze each event photo carefully to determine if the person from the 'Reference Face' appears in it. Pay close attention to facial features (eyes, nose, mouth shape, face shape, eyebrows, facial hair) and ignore changes in expression, lighting, glasses, or camera angle. Identify all event photos that contain a match. Output a JSON object with a single field 'matches', which is a list of matched items. Each matched item must contain 'filename' (the exact filename of the matched photo) and 'confidence' (string: 'high', 'medium', or 'low').`;
+  const prompt = `You are a high-precision biometric face detection and recognition AI model. Your task is to detect and match human faces across event photographs. 1. The image labeled 'Reference Face' contains the target individual's face. 2. Carefully detect all faces present in each candidate 'Event Photo'. 3. Perform detailed facial feature comparison (eyes, eyebrows, nose bridge, jaw structure, lip contours, cheekbones, facial proportions). 4. Ignore non-biometric variations such as lighting conditions, shadows, head rotation up to 45 degrees, smile/expression changes, hair style changes, or accessories like glasses. 5. If the target person appears anywhere in an Event Photo (even in group shots or background), include it in the matches list with its exact filename and match confidence ('high' for clear match, 'medium' for partial/angled match). Output a JSON object with a single field 'matches'.`;
   
   parts.push({ text: prompt });
   parts.push({ text: "--- Reference Face ---" });
@@ -123,9 +123,10 @@ async function processChunkWithModelFallbackNode(
   chunkFiles: { name: string; path: string }[]
 ): Promise<ScanMatch[]> {
   const models = [
-    "gemini-3.6-flash",
     "gemini-2.5-flash",
-    "gemini-3.1-pro-preview"
+    "gemini-2.0-flash",
+    "gemini-1.5-flash",
+    "gemini-1.5-pro"
   ];
   
   let lastError = null;
