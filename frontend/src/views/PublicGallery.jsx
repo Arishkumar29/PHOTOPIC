@@ -303,69 +303,32 @@ export function PublicGallery({ eventData, onBack }) {
                 </button>
               </div>
 
-              {/* Right Column: Dynamic Showcase Collage */}
-              <div className="lg:col-span-6 relative h-[380px] sm:h-[480px] w-full flex items-center justify-center overflow-hidden rounded-[2.5rem] bg-slate-50 dark:bg-zinc-900/40 border border-slate-100 dark:border-zinc-800/40 p-4 sm:p-6 shadow-inner">
-                {/* Simulated vertical columns scrolling */}
-                <div className="grid grid-cols-3 gap-3 w-full h-full relative">
-                  
-                  {/* Column 1 (Up) */}
-                  <div className="flex flex-col gap-3 animate-marquee-up py-4 select-none">
-                    {[
-                      "https://images.unsplash.com/photo-1519741497674-611481863552?w=300&auto=format&fit=crop&q=80",
-                      "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=300&auto=format&fit=crop&q=80",
-                      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80"
-                    ].map((img, idx) => (
-                      <div key={idx} className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-md border border-white dark:border-zinc-800">
-                        <img src={img} className="w-full h-full object-cover grayscale-[30%]" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                      </div>
-                    ))}
-                  </div>
+              {/* Right Column: 3D Mascot Superhero AI Showcase */}
+              <div className="lg:col-span-6 relative h-[380px] sm:h-[480px] w-full flex flex-col items-center justify-center overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-purple-50/80 via-white to-orange-50/60 dark:from-zinc-900 dark:via-zinc-900/90 dark:to-zinc-850 border border-purple-100 dark:border-zinc-800/80 p-6 sm:p-8 shadow-sm">
+                {/* Soft ambient gradient orb */}
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(110,43,139,0.08)_0%,transparent_70%)] pointer-events-none" />
+                <div className="absolute top-0 right-0 w-72 h-72 bg-[#6e2b8b]/15 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute bottom-0 left-0 w-72 h-72 bg-[#da7756]/15 rounded-full blur-3xl pointer-events-none" />
 
-                  {/* Column 2 (Down with Active AI Ring Indicator) */}
-                  <div className="flex flex-col gap-3 animate-marquee-down py-4 relative select-none">
-                    {[
-                      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&auto=format&fit=crop&q=80",
-                      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300&auto=format&fit=crop&q=80",
-                      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=300&auto=format&fit=crop&q=80"
-                    ].map((img, idx) => (
-                      <div key={idx} className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-md border border-white dark:border-zinc-800 group">
-                        <img src={img} className="w-full h-full object-cover" />
-                        
-                        {/* Detection ring simulator */}
-                        {idx === 1 && (
-                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <div className="w-16 h-16 rounded-full border-2 border-emerald-400 border-dashed animate-spin flex items-center justify-center bg-emerald-400/10">
-                              <span className="text-[7px] font-black text-emerald-400 bg-slate-900/90 px-1 py-0.5 rounded uppercase tracking-wider scale-90">Scanning</span>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Column 3 (Up) */}
-                  <div className="flex flex-col gap-3 animate-marquee-up py-4 select-none">
-                    {[
-                      "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=300&auto=format&fit=crop&q=80",
-                      "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=300&auto=format&fit=crop&q=80",
-                      "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=300&auto=format&fit=crop&q=80"
-                    ].map((img, idx) => (
-                      <div key={idx} className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-md border border-white dark:border-zinc-800">
-                        <img src={img} className="w-full h-full object-cover grayscale-[30%]" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Laser scan line overlay */}
-                <div className="absolute inset-x-0 h-full pointer-events-none overflow-hidden z-20">
-                  <motion.div 
-                    animate={{ y: ['-20%', '120%', '-20%'] }}
-                    transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-                    className="w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-60 shadow-[0_0_20px_5px_rgba(59,130,246,0.6)]"
+                {/* Flying Rocket Mascot */}
+                <div className="relative z-10 flex flex-col items-center justify-center">
+                  <motion.img 
+                    src="/mascot_rocket.png" 
+                    alt="AI Powered Speed Sync" 
+                    animate={{ y: [0, -12, 0], rotate: [0, 1.5, 0] }}
+                    transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
+                    className="w-56 sm:w-64 md:w-72 max-h-[300px] h-auto object-contain drop-shadow-[0_20px_35px_rgba(110,43,139,0.22)] select-none pointer-events-none"
                   />
+
+                  {/* Feature Badges floating below mascot */}
+                  <div className="mt-4 flex flex-wrap items-center justify-center gap-2 relative z-10">
+                    <span className="px-3.5 py-1.5 rounded-full bg-white/90 dark:bg-zinc-800/90 text-slate-800 dark:text-zinc-200 text-xs font-bold shadow-sm border border-purple-100 dark:border-zinc-700 flex items-center gap-1.5 select-none">
+                      <Sparkles className="w-3.5 h-3.5 text-[#da7756]" /> 99.8% SFace Accuracy
+                    </span>
+                    <span className="px-3.5 py-1.5 rounded-full bg-purple-100/80 dark:bg-purple-950/60 text-[#6e2b8b] dark:text-[#da7756] text-xs font-bold shadow-sm border border-purple-200/60 select-none">
+                      ⚡ 0.4s Instant Discovery
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -447,35 +410,40 @@ export function PublicGallery({ eventData, onBack }) {
             animate={{ opacity: 1, scale: 1 }}
             className="max-w-md mx-auto bg-gradient-to-br from-purple-50/90 via-white to-orange-50/60 dark:from-zinc-900 dark:via-zinc-900/90 dark:to-zinc-850 text-slate-900 dark:text-zinc-50 rounded-[2.5rem] p-8 border border-purple-100 dark:border-zinc-800 shadow-xl relative overflow-hidden text-center space-y-6"
           >
-            {/* Holographic scanner camera feed view */}
-            <div className="relative w-48 h-48 rounded-[2rem] overflow-hidden border-2 border-[#da7756] shadow-[0_0_30px_rgba(218,119,86,0.3)] mx-auto">
-              <img src={photo} alt="Selfie" className="w-full h-full object-cover transform -scale-x-100" />
+            {/* Thinking Mascot Illustration with Laser Scan */}
+            <div className="relative w-44 h-44 rounded-[2rem] overflow-hidden bg-white/60 dark:bg-zinc-800/60 border-2 border-[#da7756] shadow-[0_0_30px_rgba(218,119,86,0.25)] mx-auto flex items-center justify-center p-2">
+              <motion.img 
+                src="/mascot_thinking.png" 
+                alt="AI Thinking" 
+                animate={{ scale: [1, 1.03, 1] }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                className="w-full h-full object-contain drop-shadow-md"
+              />
               
               {/* Laser line sweeping */}
               <motion.div 
-                animate={{ y: ['-5%', '105%', '-5%'] }}
+                animate={{ y: ['-10%', '110%', '-10%'] }}
                 transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
                 className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#6e2b8b] via-[#da7756] to-[#6e2b8b] shadow-[0_0_12px_rgba(218,119,86,1)] z-20"
               />
-              <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(110,43,139,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(110,43,139,0.05)_1px,transparent_1px)] bg-[size:10px_10px] pointer-events-none" />
             </div>
 
             {/* Animated progress indicators */}
             <div className="space-y-2">
               <h3 className="text-xl font-bold tracking-tight text-slate-900 dark:text-zinc-50 flex items-center justify-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#da7756] animate-ping"></span>
-                Analyzing Biometrics
+                Searching Your Photos...
               </h3>
               <p className="text-slate-500 dark:text-zinc-400 text-xs max-w-xs mx-auto">
-                GWC SFace Engine is computing 512-d embeddings and matching them against event photos...
+                GWC SFace Engine is computing 512-d embeddings and matching them against the gallery album...
               </p>
             </div>
 
-            {/* Holographic circular diagnostic wave */}
+            {/* Diagnostic indicator */}
             <div className="relative w-full py-2 flex justify-center items-center">
-              <div className="absolute w-24 h-24 rounded-full border border-[#6e2b8b]/40 animate-ping" />
-              <div className="absolute w-16 h-16 rounded-full border border-[#da7756]/40 animate-pulse" />
-              <div className="text-[10px] font-mono tracking-widest text-[#6e2b8b] dark:text-[#da7756] animate-pulse uppercase">Scanning SFace Embeddings</div>
+              <div className="text-[11px] font-semibold tracking-wider text-[#6e2b8b] dark:text-[#da7756] animate-pulse uppercase">
+                Matching Face Vectors
+              </div>
             </div>
           </motion.div>
         )}
@@ -512,18 +480,24 @@ export function PublicGallery({ eventData, onBack }) {
               </div>
             )}
 
-            {/* Error / No Photo Found State — Fun & Engaging */}
+            {/* Error / No Photo Found State — Fun & Engaging with Sad Mascot */}
             {scanError && (
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-gradient-to-br from-purple-50/80 via-white to-orange-50/50 dark:from-zinc-900 dark:via-zinc-900/80 dark:to-zinc-850 border border-purple-100 dark:border-zinc-800/80 rounded-[2.5rem] p-12 text-center mb-12 shadow-sm max-w-lg mx-auto"
+                className="bg-gradient-to-br from-purple-50/80 via-white to-orange-50/50 dark:from-zinc-900 dark:via-zinc-900/80 dark:to-zinc-850 border border-purple-100 dark:border-zinc-800/80 rounded-[2.5rem] p-10 text-center mb-12 shadow-sm max-w-lg mx-auto"
               >
-                <div className="w-16 h-16 bg-gradient-to-br from-[#6e2b8b]/10 to-[#da7756]/20 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl select-none">
-                  🙈
+                <div className="w-28 h-28 mx-auto mb-4 flex items-center justify-center">
+                  <motion.img 
+                    src="/mascot_sad.png" 
+                    alt="No photo found" 
+                    animate={{ y: [0, -4, 0] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                    className="w-full h-full object-contain drop-shadow-md"
+                  />
                 </div>
                 <h3 className="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900 dark:text-zinc-50 mb-3">
-                  Playing Hide & Seek? ✨
+                  Playing Hide &amp; Seek? ✨
                 </h3>
                 <p className="text-slate-600 dark:text-zinc-400 font-medium text-sm sm:text-base leading-relaxed max-w-md mx-auto mb-8">
                   We couldn't spot your smile in this batch just yet! The host might still be uploading more high-res event moments.
@@ -538,16 +512,22 @@ export function PublicGallery({ eventData, onBack }) {
               </motion.div>
             )}
 
-            {/* Empty state — Fun & Friendly */}
+            {/* Empty state — Fun & Friendly with Sad Mascot */}
             {!scanError && matchedPhotos?.length === 0 && (
               <motion.div 
                 initial={{ opacity: 0, scale: 0.95 }} 
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ type: 'spring', bounce: 0.3 }}
-                className="bg-gradient-to-br from-purple-50/80 via-white to-orange-50/50 dark:from-zinc-900 dark:via-zinc-900/80 dark:to-zinc-850 border border-purple-100 dark:border-zinc-800/80 rounded-[2.5rem] p-14 text-center max-w-lg mx-auto shadow-sm"
+                className="bg-gradient-to-br from-purple-50/80 via-white to-orange-50/50 dark:from-zinc-900 dark:via-zinc-900/80 dark:to-zinc-850 border border-purple-100 dark:border-zinc-800/80 rounded-[2.5rem] p-10 text-center max-w-lg mx-auto shadow-sm"
               >
-                <div className="w-20 h-20 bg-gradient-to-br from-[#6e2b8b]/10 to-[#da7756]/20 rounded-[1.75rem] flex items-center justify-center mx-auto mb-6 text-4xl select-none">
-                  ✨
+                <div className="w-28 h-28 mx-auto mb-4 flex items-center justify-center">
+                  <motion.img 
+                    src="/mascot_sad.png" 
+                    alt="No matches" 
+                    animate={{ y: [0, -4, 0] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                    className="w-full h-full object-contain drop-shadow-md"
+                  />
                 </div>
                 <h3 className="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900 dark:text-zinc-50 mb-3">
                   No matches found... <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6e2b8b] to-[#da7756] font-serif italic">yet!</span>

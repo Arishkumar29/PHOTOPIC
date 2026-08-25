@@ -415,7 +415,7 @@ export function Organizer({ initialView = 'dashboard', onOpenPublicView }) {
               </div>
               <div className="relative z-10">
                 <h4 className="text-lg sm:text-xl font-semibold tracking-tight text-white">The GWC FaceSync Workflow</h4>
-                <p className="text-sm font-medium text-white/85 mt-1">Create Gallery → Connect Drive / Upload → Guests scan QR to find photos via SFace AI</p>
+                <p className="text-sm font-medium text-white/85 mt-1">Create Gallery → Connect Drive / Upload → Guests scan QR </p>
               </div>
               <button 
                 onClick={() => setViewMode('create')}
@@ -723,14 +723,19 @@ export function Organizer({ initialView = 'dashboard', onOpenPublicView }) {
                     className="max-w-2xl mx-auto space-y-8 text-left"
                   >
                     {/* Step 2 hero heading */}
-                    <div>
-                      <div className="text-xs font-semibold uppercase tracking-widest text-[#6e2b8b] dark:text-[#da7756] mb-3">Step 2 of 3</div>
-                      <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900 dark:text-zinc-50 leading-[1.05] mb-3">
-                        Connect your <span className="font-serif italic text-transparent bg-clip-text bg-gradient-to-r from-[#6e2b8b] to-[#da7756]">Drive.</span>
-                      </h2>
-                      <p className="text-slate-500 dark:text-zinc-400 font-medium leading-relaxed">
-                        Link a shared Google Drive folder and we’ll sync all photos automatically for face-recognition matching.
-                      </p>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div>
+                        <div className="text-xs font-semibold uppercase tracking-widest text-[#6e2b8b] dark:text-[#da7756] mb-3">Step 2 of 3</div>
+                        <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-slate-900 dark:text-zinc-50 leading-[1.05] mb-3">
+                          Connect your <span className="font-serif italic text-transparent bg-clip-text bg-gradient-to-r from-[#6e2b8b] to-[#da7756]">Drive.</span>
+                        </h2>
+                        <p className="text-slate-500 dark:text-zinc-400 font-medium leading-relaxed max-w-md">
+                          Link a shared Google Drive folder and we’ll sync all photos automatically for face-recognition matching.
+                        </p>
+                      </div>
+                      <div className="shrink-0 hidden sm:block">
+                        <img src="/mascot_handshake.png" alt="Drive Sync Partner" className="w-32 h-auto object-contain drop-shadow-md" />
+                      </div>
                     </div>
 
                     {/* 3-step visual instruction cards */}
