@@ -137,27 +137,40 @@ export function AuthView({ onLoginSuccess }) {
         </div>
       </div>
 
-      {/* RIGHT: Visual Area */}
-      <div className="hidden md:flex flex-1 bg-gradient-to-br from-[#220a2e] via-[#15061c] to-[#0c0410] relative overflow-hidden items-center justify-center">
-        {/* Glow effects */}
-        <div className="absolute -top-32 -left-32 w-96 h-96 bg-[#6e2b8b]/30 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-[#da7756]/20 rounded-full blur-3xl pointer-events-none" />
-        
-        <div className="relative z-10 text-center max-w-sm px-6">
-          <div className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-gradient-to-br from-[#6e2b8b] to-[#da7756] p-0.5 shadow-2xl">
-            <div className="w-full h-full bg-[#15061c] rounded-[22px] flex items-center justify-center text-white">
-              <ShieldCheck className="w-9 h-9 text-[#da7756]" />
-            </div>
+      {/* RIGHT: Visual Area — Welcoming Mascot Character */}
+      <div className="hidden md:flex flex-1 bg-gradient-to-br from-[#2a0e39] via-[#1a0824] to-[#100416] relative overflow-hidden items-center justify-center p-8">
+        {/* Ambient brand glow */}
+        <div className="absolute -top-24 -left-24 w-96 h-96 bg-[#6e2b8b]/35 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-[#da7756]/25 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(110,43,139,0.15)_0%,transparent_70%)] pointer-events-none" />
+
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.92, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.7, type: 'spring', bounce: 0.25 }}
+          className="relative z-10 flex flex-col items-center text-center max-w-sm"
+        >
+          {/* Mascot character image with floating animation and soft ambient halo */}
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-b from-[#6e2b8b]/40 to-[#da7756]/30 rounded-full blur-2xl transform scale-90 -z-10" />
+            <motion.img 
+              src="/welcome_mascot.png" 
+              alt="Welcome Mascot" 
+              animate={{ y: [0, -8, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+              className="w-64 sm:w-72 md:w-80 h-auto object-contain drop-shadow-[0_20px_35px_rgba(0,0,0,0.5)] select-none pointer-events-none"
+            />
           </div>
-          <h2 className="text-2xl font-semibold text-white mb-2">GWC Event FaceSync</h2>
-          <p className="text-purple-200/70 text-sm leading-relaxed mb-6">
-            Privacy-first face recognition platform powered by high-accuracy SFace + OpenCV local AI.
-          </p>
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 text-white/90 text-xs border border-white/15 backdrop-blur-md">
-            <span className="w-2 h-2 rounded-full bg-[#da7756] animate-pulse" />
-            Active SFace Recognition Engine
+
+          <div className="mt-2 space-y-1.5">
+            <h2 className="text-2xl font-bold text-white tracking-tight">
+              Welcome to <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-200 via-white to-[#da7756]">GWC PhotoSync</span>
+            </h2>
+            <p className="text-purple-200/80 text-xs sm:text-sm font-medium leading-relaxed max-w-xs">
+              AI-Powered Facial Recognition &amp; Instant Event Photo Discovery
+            </p>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
