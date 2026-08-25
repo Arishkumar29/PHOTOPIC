@@ -1,16 +1,85 @@
 @import "tailwindcss";
 
+@theme {
+  --color-gwc-purple: #6e2b8b;
+  --color-gwc-coral: #da7756;
+}
+
+:root {
+  --color-gwc-purple: #6e2b8b;
+  --color-gwc-coral: #da7756;
+  --color-bg-cutout: #ffffff;
+}
+
+.dark {
+  --color-bg-cutout: #18181b;
+}
+
+.bg-gwc-purple {
+  background-color: #6e2b8b;
+}
+
+.text-gwc-purple {
+  color: #6e2b8b;
+}
+
+.border-gwc-purple {
+  border-color: #6e2b8b;
+}
+
+.bg-gwc-coral {
+  background-color: #da7756;
+}
+
+.text-gwc-coral {
+  color: #da7756;
+}
+
+.border-gwc-coral {
+  border-color: #da7756;
+}
+
+.bg-gwc-gradient {
+  background: linear-gradient(135deg, #6e2b8b 0%, #da7756 100%);
+}
+
+.text-gwc-gradient {
+  background: linear-gradient(135deg, #6e2b8b 0%, #da7756 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.btn-gwc {
+  background: linear-gradient(135deg, #6e2b8b 0%, #da7756 100%);
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 8px 20px -4px rgba(110, 43, 139, 0.35);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-gwc:hover {
+  opacity: 0.94;
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px -4px rgba(110, 43, 139, 0.45);
+}
+
+.btn-gwc:disabled {
+  opacity: 0.6;
+  transform: none;
+  box-shadow: none;
+}
+
 .grid-bg-subtle {
   background-image: 
-    linear-gradient(to right, rgba(148, 163, 184, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
+    linear-gradient(to right, rgba(110, 43, 139, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(110, 43, 139, 0.04) 1px, transparent 1px);
   background-size: 40px 40px;
 }
 
 .grid-bg-accent {
   background-image: 
-    linear-gradient(to right, rgba(148, 163, 184, 0.08) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+    linear-gradient(to right, rgba(218, 119, 86, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(218, 119, 86, 0.05) 1px, transparent 1px);
   background-size: 120px 120px;
 }
 
@@ -24,44 +93,8 @@
   mask-image: radial-gradient(circle 1000px at 50% 120%, black 20%, transparent 80%);
 }
 
-/* Custom dark mode variant for Tailwind v4 custom rules if needed */
+/* Custom dark mode variant */
 @custom-variant dark (&:where(.dark, .dark *));
-
-:root {
-  --color-bg-cutout: #ffffff;
-}
-.dark {
-  --color-bg-cutout: #18181b; /* zinc-900 */
-}
-
-.active-cutout {
-  position: relative;
-  background-color: var(--color-bg-cutout);
-}
-.active-cutout::before {
-  content: '';
-  position: absolute;
-  right: 0;
-  top: -20px;
-  width: 20px;
-  height: 20px;
-  background-color: transparent;
-  border-bottom-right-radius: 20px;
-  box-shadow: 10px 10px 0 0 var(--color-bg-cutout);
-  pointer-events: none;
-}
-.active-cutout::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  bottom: -20px;
-  width: 20px;
-  height: 20px;
-  background-color: transparent;
-  border-top-right-radius: 20px;
-  box-shadow: 10px -10px 0 0 var(--color-bg-cutout);
-  pointer-events: none;
-}
 
 /* Custom premium hover animations */
 @keyframes shine-sweep {
@@ -99,28 +132,3 @@
 .hover-shine:hover::after {
   animation: shine-sweep 0.85s ease-in-out;
 }
-
-.glow-btn-primary {
-  box-shadow: 0 4px 20px -2px rgba(59, 130, 246, 0.15);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.glow-btn-primary:hover {
-  box-shadow: 0 10px 30px -4px rgba(59, 130, 246, 0.35);
-}
-
-.glow-btn-dark {
-  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.12);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.glow-btn-dark:hover {
-  box-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.25);
-}
-
-.dark .glow-btn-dark {
-  box-shadow: 0 4px 20px -2px rgba(255, 255, 255, 0.05);
-}
-.dark .glow-btn-dark:hover {
-  box-shadow: 0 10px 30px -4px rgba(255, 255, 255, 0.12);
-}
-
-

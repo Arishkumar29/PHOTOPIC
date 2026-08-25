@@ -48,7 +48,7 @@ export function Sidebar({ activeTab, setActiveTab, mobileMenuOpen, setMobileMenu
                 {isActive && (
                   <motion.div
                     layoutId="sidebarActiveDot"
-                    className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-slate-900 dark:bg-zinc-100 rounded-full"
+                    className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-gradient-to-b from-[#6e2b8b] to-[#da7756] rounded-full"
                     transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                   />
                 )}

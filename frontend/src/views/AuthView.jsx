@@ -63,16 +63,16 @@ export function AuthView({ onLoginSuccess }) {
   };
 
   return (
-    <div className="min-h-screen bg-transparent flex flex-col md:flex-row font-sans w-full selection:bg-slate-200">
+    <div className="min-h-screen bg-transparent flex flex-col md:flex-row font-sans w-full selection:bg-purple-100">
       
       {/* LEFT: Admin Form Area */}
       <div className="flex-1 flex flex-col relative z-10 bg-white dark:bg-zinc-950 border-r border-slate-100 dark:border-zinc-800/40">
         
         {/* Top bar */}
         <div className="flex items-center justify-between px-8 py-6">
-          <div className="flex items-center gap-2">
-            <Logo />
-            <span className="ml-2 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700">
+          <div className="flex items-center gap-3">
+            <Logo size="default" />
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-50 dark:bg-purple-950/40 text-[#6e2b8b] dark:text-[#da7756] border border-purple-200/50 dark:border-purple-900/40">
               Admin Portal
             </span>
           </div>
@@ -136,7 +136,7 @@ export function AuthView({ onLoginSuccess }) {
                     type="email" 
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-zinc-100 transition-all text-slate-900 dark:text-zinc-50 text-sm font-medium"
+                    className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6e2b8b] focus:border-[#6e2b8b] transition-all text-slate-900 dark:text-zinc-50 text-sm font-medium"
                     placeholder="admin@photopic.app"
                     required
                   />
@@ -155,7 +155,7 @@ export function AuthView({ onLoginSuccess }) {
                     type="password" 
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-zinc-100 transition-all text-slate-900 dark:text-zinc-50 text-sm font-medium"
+                    className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800/60 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6e2b8b] focus:border-[#6e2b8b] transition-all text-slate-900 dark:text-zinc-50 text-sm font-medium"
                     placeholder="••••••••"
                     required
                   />
@@ -175,7 +175,7 @@ export function AuthView({ onLoginSuccess }) {
               <button 
                 type="submit"
                 disabled={loading}
-                className="w-full bg-slate-900 dark:bg-zinc-100 hover:bg-slate-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 font-semibold px-6 py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer text-sm shadow-sm"
+                className="w-full bg-gradient-to-r from-[#6e2b8b] to-[#da7756] hover:opacity-95 text-white font-semibold px-6 py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer text-sm shadow-md shadow-purple-900/20"
               >
                 {loading ? 'Authenticating…' : 'Log In to Admin Dashboard'}
               </button>
@@ -185,20 +185,23 @@ export function AuthView({ onLoginSuccess }) {
       </div>
 
       {/* RIGHT: Visual Area */}
-      <div className="hidden md:flex flex-1 bg-slate-900 dark:bg-zinc-900 relative overflow-hidden items-center justify-center">
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-900/95 to-slate-800" />
-
+      <div className="hidden md:flex flex-1 bg-gradient-to-br from-[#220a2e] via-[#15061c] to-[#0c0410] relative overflow-hidden items-center justify-center">
+        {/* Glow effects */}
+        <div className="absolute -top-32 -left-32 w-96 h-96 bg-[#6e2b8b]/30 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-[#da7756]/20 rounded-full blur-3xl pointer-events-none" />
+        
         <div className="relative z-10 text-center max-w-sm px-6">
-          <div className="w-16 h-16 mx-auto mb-6 rounded-3xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center text-white shadow-xl">
-            <ShieldCheck className="w-8 h-8" />
+          <div className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-gradient-to-br from-[#6e2b8b] to-[#da7756] p-0.5 shadow-2xl">
+            <div className="w-full h-full bg-[#15061c] rounded-[22px] flex items-center justify-center text-white">
+              <ShieldCheck className="w-9 h-9 text-[#da7756]" />
+            </div>
           </div>
-          <h2 className="text-2xl font-semibold text-white mb-2">Photopic Organizer</h2>
-          <p className="text-slate-400 text-sm leading-relaxed mb-6">
+          <h2 className="text-2xl font-semibold text-white mb-2">GWC Event FaceSync</h2>
+          <p className="text-purple-200/70 text-sm leading-relaxed mb-6">
             Privacy-first face recognition platform powered by high-accuracy SFace + OpenCV local AI.
           </p>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white/80 text-xs border border-white/10">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 text-white/90 text-xs border border-white/15 backdrop-blur-md">
+            <span className="w-2 h-2 rounded-full bg-[#da7756] animate-pulse" />
             Active SFace Recognition Engine
           </div>
         </div>

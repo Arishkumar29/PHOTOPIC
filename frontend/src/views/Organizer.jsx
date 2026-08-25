@@ -396,22 +396,22 @@ export function Organizer({ initialView = 'dashboard', onOpenPublicView }) {
               ))}
             </div>
 
-            {/* Workflow strip — lime CTA band style */}
-            <div className="bg-[#c0ff00] rounded-[1.75rem] p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 relative overflow-hidden">
+            {/* Workflow strip — GWC brand gradient */}
+            <div className="bg-gradient-to-r from-[#6e2b8b] via-[#8c35b0] to-[#da7756] rounded-[1.75rem] p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 relative overflow-hidden shadow-xl shadow-purple-950/20 text-white">
               <div className="absolute inset-0 pointer-events-none grid grid-cols-8 grid-rows-2 gap-6 opacity-10 p-6">
                 {[...Array(16)].map((_, i) => (
                   <div key={i} className="w-6 h-6 flex items-center justify-center">
-                    {i % 2 === 0 ? <Camera className="w-full h-full text-black"/> : <Zap className="w-full h-full text-black"/>}
+                    {i % 2 === 0 ? <Camera className="w-full h-full text-white"/> : <Zap className="w-full h-full text-white"/>}
                   </div>
                 ))}
               </div>
               <div className="relative z-10">
-                <h4 className="text-lg sm:text-xl font-medium tracking-tight text-black">The Privapic Workflow</h4>
-                <p className="text-sm font-medium text-black/70 mt-1">Create Gallery → Connect Drive → Guests scan to find photos via AI FaceSync</p>
+                <h4 className="text-lg sm:text-xl font-semibold tracking-tight text-white">The GWC FaceSync Workflow</h4>
+                <p className="text-sm font-medium text-white/85 mt-1">Create Gallery → Connect Drive / Upload → Guests scan QR to find photos via SFace AI</p>
               </div>
               <button 
                 onClick={() => setViewMode('create')}
-                className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-8 py-4 rounded-full transition-all shadow-lg hover:shadow-xl shrink-0 relative z-10 whitespace-nowrap"
+                className="bg-white hover:bg-slate-100 text-[#6e2b8b] font-bold px-8 py-4 rounded-full transition-all shadow-lg hover:shadow-xl shrink-0 relative z-10 whitespace-nowrap cursor-pointer hover:scale-102"
               >
                 Create Gallery
               </button>

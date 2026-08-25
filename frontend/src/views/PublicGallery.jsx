@@ -282,13 +282,13 @@ export function PublicGallery({ eventData, onBack }) {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center mt-6 md:mt-16 max-w-6xl mx-auto text-left">
               {/* Left Column: CTA */}
               <div className="lg:col-span-6 text-center lg:text-left space-y-6 md:space-y-8">
-                {/* Blue badge */}
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 font-bold text-xs uppercase tracking-wider border border-blue-500/20 select-none">
-                  <Search className="w-3.5 h-3.5 animate-pulse" /> Potopic FaceSync
+                {/* GWC Brand badge */}
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-purple-50 dark:bg-purple-950/40 text-[#6e2b8b] dark:text-[#da7756] font-bold text-xs uppercase tracking-wider border border-purple-200/50 dark:border-purple-900/40 select-none">
+                  <Search className="w-3.5 h-3.5 animate-pulse text-[#da7756]" /> GWC FaceSync
                 </div>
                 
                 <h1 className="text-4xl sm:text-5xl md:text-6xl font-medium tracking-tight text-slate-900 dark:text-zinc-50 leading-[1.05]">
-                  Find your photos <span className="text-slate-400 dark:text-zinc-550 font-serif italic">in seconds.</span>
+                  Find your photos <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6e2b8b] to-[#da7756] font-serif italic">in seconds.</span>
                 </h1>
                 <p className="text-slate-500 dark:text-zinc-400 text-base sm:text-lg font-medium leading-relaxed max-w-lg">
                   Take a quick selfie and let our AI scan the event gallery to find every photo you appear in.
@@ -296,7 +296,7 @@ export function PublicGallery({ eventData, onBack }) {
                 
                 <button 
                   onClick={startCamera}
-                  className="group relative overflow-hidden bg-slate-950 dark:bg-zinc-100 text-white dark:text-zinc-900 font-extrabold text-lg px-10 py-5 rounded-full hover-shine glow-btn-dark hover:scale-[1.03] active:scale-95 transition-all duration-300 flex items-center justify-center gap-3 mx-auto lg:mx-0 cursor-pointer"
+                  className="group relative overflow-hidden bg-gradient-to-r from-[#6e2b8b] to-[#da7756] text-white font-extrabold text-lg px-10 py-5 rounded-full hover:opacity-95 shadow-xl shadow-purple-950/25 hover:scale-[1.03] active:scale-95 transition-all duration-300 flex items-center justify-center gap-3 mx-auto lg:mx-0 cursor-pointer"
                 >
                   <Camera className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
                   <span>Take Selfie</span>
@@ -448,14 +448,14 @@ export function PublicGallery({ eventData, onBack }) {
             className="max-w-md mx-auto bg-slate-900 text-white rounded-[2.5rem] p-8 border border-slate-800 shadow-2xl relative overflow-hidden text-center space-y-6"
           >
             {/* Holographic scanner camera feed view */}
-            <div className="relative w-48 h-48 rounded-[2rem] overflow-hidden border-2 border-blue-500 shadow-[0_0_30px_rgba(59,130,246,0.5)] mx-auto">
+            <div className="relative w-48 h-48 rounded-[2rem] overflow-hidden border-2 border-[#da7756] shadow-[0_0_30px_rgba(218,119,86,0.4)] mx-auto">
               <img src={photo} alt="Selfie" className="w-full h-full object-cover transform -scale-x-100" />
               
               {/* Laser line sweeping */}
               <motion.div 
                 animate={{ y: ['-5%', '105%', '-5%'] }}
                 transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                className="absolute top-0 left-0 w-full h-1 bg-blue-400 shadow-[0_0_12px_rgba(96,165,250,1)] z-20"
+                className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#6e2b8b] via-[#da7756] to-[#6e2b8b] shadow-[0_0_12px_rgba(218,119,86,1)] z-20"
               />
               {/* Glowing grid mask */}
               <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:10px_10px] pointer-events-none" />
@@ -464,19 +464,19 @@ export function PublicGallery({ eventData, onBack }) {
             {/* Animated progress indicators */}
             <div className="space-y-2">
               <h3 className="text-xl font-bold tracking-tight text-white flex items-center justify-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-ping"></span>
-                Analyzing Face Structure
+                <span className="w-2.5 h-2.5 rounded-full bg-[#da7756] animate-ping"></span>
+                Analyzing Biometric Structure
               </h3>
               <p className="text-zinc-400 text-xs max-w-xs mx-auto">
-                FaceSync AI is computing facial biometric hashes and matching them against indexed photos...
+                GWC SFace Engine is computing 512-d embeddings and matching them against event photos...
               </p>
             </div>
 
             {/* Holographic circular diagnostic wave */}
             <div className="relative w-full py-4 flex justify-center items-center">
-              <div className="absolute w-24 h-24 rounded-full border border-blue-500/20 animate-ping" />
-              <div className="absolute w-16 h-16 rounded-full border border-blue-400/40 animate-pulse" />
-              <div className="text-[10px] font-mono tracking-widest text-blue-400 animate-pulse uppercase">Scanning database</div>
+              <div className="absolute w-24 h-24 rounded-full border border-[#6e2b8b]/40 animate-ping" />
+              <div className="absolute w-16 h-16 rounded-full border border-[#da7756]/40 animate-pulse" />
+              <div className="text-[10px] font-mono tracking-widest text-[#da7756] animate-pulse uppercase">Scanning SFace Embeddings</div>
             </div>
           </motion.div>
         )}
