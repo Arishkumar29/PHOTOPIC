@@ -7,10 +7,13 @@ import "dotenv/config";
 import eventRoutes from "./routes/eventRoutes";
 import analyticsRoutes from "./routes/analyticsRoutes";
 import scanRoutes from "./routes/scanRoutes";
-import { getBulkPhotoDir } from "./services/storageService";
+import { getBulkPhotoDir, getProjectRootDir } from "./services/storageService";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const projectRoot = getProjectRootDir();
+const frontendRoot = path.join(projectRoot, "frontend");
+const distRoot = path.join(projectRoot, "dist");
 
 app.use(express.json({ limit: "50mb" }));
 
@@ -20,7 +23,7 @@ app.use("/bulk_photo", (req, res, next) => {
   if (fs.existsSync(targetPath) && fs.statSync(targetPath).isFile()) {
     return res.sendFile(targetPath);
   }
-  const rootPath = path.join(process.cwd(), "bulk_photo", req.path);
+  const rootPath = path.join(projectRoot, "bulk_photo", req.path);
   if (fs.existsSync(rootPath) && fs.statSync(rootPath).isFile()) {
     return res.sendFile(rootPath);
   }
@@ -35,8 +38,8 @@ app.use("/api", scanRoutes);
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
-      root: path.join(process.cwd(), "frontend"),
-      configFile: path.join(process.cwd(), "frontend", "vite.config.js"),
+      root: frontendRoot,
+      configFile: path.join(frontendRoot, "vite.config.js"),
       server: { middlewareMode: true },
       appType: "custom",
     });
@@ -50,7 +53,7 @@ async function startServer() {
 
       const url = req.originalUrl;
       try {
-        const indexPath = path.join(process.cwd(), "frontend", "index.html");
+        const indexPath = path.join(frontendRoot, "index.html");
         if (!fs.existsSync(indexPath)) {
           return res.status(404).send("index.html not found");
         }
@@ -63,11 +66,10 @@ async function startServer() {
       }
     });
   } else {
-    const distPath = path.join(process.cwd(), "dist");
-    app.use(express.static(distPath));
+    app.use(express.static(distRoot));
 
     app.get("*", (req, res) => {
-      const indexPath = path.join(process.cwd(), "dist", "index.html");
+      const indexPath = path.join(distRoot, "index.html");
       if (fs.existsSync(indexPath)) {
         res.sendFile(indexPath);
       } else {

@@ -9,7 +9,7 @@ export interface ScanMatch {
 
 export function runPythonScan(selfiePath: string, bulkDirPath: string): Promise<any> {
   return new Promise((resolve, reject) => {
-    const scriptPath = path.join(process.cwd(), "backend", "scripts", "scan_faces.py");
+    const scriptPath = path.resolve(__dirname, "..", "scripts", "scan_faces.py");
     const pythonProcess = spawn("python", [scriptPath, selfiePath, bulkDirPath]);
 
     let stdoutData = "";

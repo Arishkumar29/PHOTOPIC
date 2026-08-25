@@ -2,8 +2,16 @@ import path from "path";
 import fs from "fs";
 import os from "os";
 
+export const getProjectRootDir = (): string => {
+  const cwd = process.cwd();
+  if (fs.existsSync(path.join(cwd, "backend")) && fs.existsSync(path.join(cwd, "frontend"))) {
+    return cwd;
+  }
+  return path.resolve(__dirname, "..", "..");
+};
+
 export const getBulkPhotoDir = (subPath: string = ""): string => {
-  const base = process.env.VERCEL === "1" ? os.tmpdir() : process.cwd();
+  const base = process.env.VERCEL === "1" ? os.tmpdir() : getProjectRootDir();
   return path.join(base, "bulk_photo", subPath);
 };
 
