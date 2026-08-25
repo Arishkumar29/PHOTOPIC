@@ -7,11 +7,71 @@ import requests
 import cv2
 import time
 import numpy as np
+import sqlite3
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 _YUNET_DETECTOR = None
 _SFACE_RECOGNIZER = None
 _API_KEY_INVALID = False
+_SQLITE_CONN = None
+
+def get_sqlite_conn():
+    global _SQLITE_CONN
+    if _SQLITE_CONN is not None:
+        return _SQLITE_CONN
+    try:
+        model_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "models"))
+        os.makedirs(model_dir, exist_ok=True)
+        db_path = os.path.join(model_dir, "face_embeddings.sqlite")
+        _SQLITE_CONN = sqlite3.connect(db_path, check_same_thread=False)
+        cursor = _SQLITE_CONN.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS face_embeddings (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                file_path TEXT UNIQUE,
+                feat_blob BLOB NOT NULL,
+                lbp_blob BLOB NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        """)
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_file_path ON face_embeddings(file_path);")
+        _SQLITE_CONN.commit()
+        return _SQLITE_CONN
+    except Exception as e:
+        sys.stderr.write(f"SQLite DB init error: {str(e)}\n")
+        return None
+
+def get_cached_face_data(file_path):
+    conn = get_sqlite_conn()
+    if conn is None:
+        return None, None
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT feat_blob, lbp_blob FROM face_embeddings WHERE file_path = ?", (file_path,))
+        row = cursor.fetchone()
+        if row and row[0] and row[1]:
+            feat = np.frombuffer(row[0], dtype=np.float32).reshape(1, -1)
+            lbp = np.frombuffer(row[1], dtype=np.float32)
+            return feat, lbp
+    except Exception as e:
+        sys.stderr.write(f"SQLite read error for {file_path}: {str(e)}\n")
+    return None, None
+
+def save_cached_face_data(file_path, feat, lbp):
+    conn = get_sqlite_conn()
+    if conn is None or feat is None or lbp is None:
+        return
+    try:
+        cursor = conn.cursor()
+        feat_blob = feat.astype(np.float32).tobytes()
+        lbp_blob = lbp.astype(np.float32).tobytes()
+        cursor.execute("""
+            INSERT OR REPLACE INTO face_embeddings (file_path, feat_blob, lbp_blob)
+            VALUES (?, ?, ?)
+        """, (file_path, feat_blob, lbp_blob))
+        conn.commit()
+    except Exception as e:
+        sys.stderr.write(f"SQLite save error for {file_path}: {str(e)}\n")
 
 def get_mime_type(filename):
     ext = filename.lower().split('.')[-1]
@@ -292,58 +352,62 @@ def local_face_recognition_fallback(selfie_path, image_paths):
             if "temp_selfie_" in os.path.basename(img_path):
                 continue
                 
-            orig_img = cv2.imread(img_path)
-            if orig_img is None:
-                continue
+            target_feat, target_lbp = get_cached_face_data(img_path)
             
-            orig_h, orig_w = orig_img.shape[:2]
-            max_detect_size = 1024
-            scale = 1.0
-            if max(orig_h, orig_w) > max_detect_size:
-                scale = max_detect_size / max(orig_h, orig_w)
-                detect_img = cv2.resize(orig_img, (int(orig_w * scale), int(orig_h * scale)), interpolation=cv2.INTER_AREA)
-            else:
-                detect_img = orig_img.copy()
+            if target_feat is None or target_lbp is None:
+                orig_img = cv2.imread(img_path)
+                if orig_img is None:
+                    continue
                 
-            detect_h, detect_w = detect_img.shape[:2]
-            detector = get_yunet_detector(detect_w, detect_h)
-            
-            if detector is not None:
-                retval, faces = detector.detect(detect_img)
-                if faces is not None and len(faces) > 0:
-                    for f_idx, face in enumerate(faces):
-                        scaled_face = face.copy()
+                orig_h, orig_w = orig_img.shape[:2]
+                max_detect_size = 1024
+                scale = 1.0
+                if max(orig_h, orig_w) > max_detect_size:
+                    scale = max_detect_size / max(orig_h, orig_w)
+                    detect_img = cv2.resize(orig_img, (int(orig_w * scale), int(orig_h * scale)), interpolation=cv2.INTER_AREA)
+                else:
+                    detect_img = orig_img.copy()
+                    
+                detect_h, detect_w = detect_img.shape[:2]
+                detector = get_yunet_detector(detect_w, detect_h)
+                
+                if detector is not None:
+                    retval, faces = detector.detect(detect_img)
+                    if faces is not None and len(faces) > 0:
+                        scaled_face = faces[0].copy()
                         if scale != 1.0:
-                            scaled_face[0:14] = face[0:14] / scale
+                            scaled_face[0:14] = faces[0][0:14] / scale
                         
                         target_aligned = recognizer.alignCrop(orig_img, scaled_face)
                         target_feat = recognizer.feature(target_aligned)
                         target_normalized = normalize_lighting(target_aligned)
                         target_lbp = extract_grid_lbp_features(target_normalized)
                         
-                        if target_lbp is None or selfie_lbp is None:
-                            continue
+                        if target_feat is not None and target_lbp is not None:
+                            save_cached_face_data(img_path, target_feat, target_lbp)
                             
-                        cosine_score = recognizer.match(selfie_feat, target_feat, cv2.FaceRecognizerSF_FR_COSINE)
-                        l2_score = recognizer.match(selfie_feat, target_feat, cv2.FaceRecognizerSF_FR_NORM_L2)
-                        
-                        eps = 1e-10
-                        chi_square = np.sum(((selfie_lbp - target_lbp) ** 2) / (selfie_lbp + target_lbp + eps))
-                        lbp_sim = 1.0 / (1.0 + chi_square)
-                        
-                        is_match = False
-                        if (cosine_score >= 0.363 and l2_score <= 1.128):
-                            is_match = True
-                        elif (cosine_score >= 0.32 and l2_score <= 1.25 and lbp_sim >= 0.40):
-                            is_match = True
-                        
-                        if is_match:
-                            matched_images.append({
-                                "name": os.path.basename(img_path),
-                                "path": img_path,
-                                "confidence": "high" if cosine_score > 0.42 and l2_score < 1.0 and lbp_sim > 0.55 else "medium"
-                            })
-                            break
+            if target_feat is None or target_lbp is None:
+                continue
+                
+            cosine_score = recognizer.match(selfie_feat, target_feat, cv2.FaceRecognizerSF_FR_COSINE)
+            l2_score = recognizer.match(selfie_feat, target_feat, cv2.FaceRecognizerSF_FR_NORM_L2)
+            
+            eps = 1e-10
+            chi_square = np.sum(((selfie_lbp - target_lbp) ** 2) / (selfie_lbp + target_lbp + eps))
+            lbp_sim = 1.0 / (1.0 + chi_square)
+            
+            is_match = False
+            if (cosine_score >= 0.363 and l2_score <= 1.128):
+                is_match = True
+            elif (cosine_score >= 0.32 and l2_score <= 1.25 and lbp_sim >= 0.40):
+                is_match = True
+            
+            if is_match:
+                matched_images.append({
+                    "name": os.path.basename(img_path),
+                    "path": img_path,
+                    "confidence": "high" if cosine_score > 0.42 and l2_score < 1.0 and lbp_sim > 0.55 else "medium"
+                })
         except Exception as e:
             sys.stderr.write(f"Error comparing face in {img_path} locally: {str(e)}\n")
             

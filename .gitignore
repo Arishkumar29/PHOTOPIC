@@ -9,4 +9,7 @@ coverage/
 bulk_photo/*
 !bulk_photo/README.md
 .vite/
+*.sqlite
+*.onnx
+
 
