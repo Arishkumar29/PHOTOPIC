@@ -1,4 +1,5 @@
 import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
 import {defineConfig} from 'vite';
 
@@ -9,7 +10,7 @@ export default defineConfig(() => {
       outDir: '../../dist',
       emptyOutDir: true,
     },
-    plugins: [react()],
+    plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, 'frontend2/photopic'),

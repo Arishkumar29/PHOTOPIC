@@ -17,6 +17,62 @@ export interface EventData {
 
 export const events: Record<string, EventData> = {};
 
+const DB_FILE = path.join(process.cwd(), "bulk_photo", "events_db.json");
+
+function saveEventsToDisk() {
+  try {
+    const dir = path.dirname(DB_FILE);
+    ensureDirExists(dir);
+    fs.writeFileSync(DB_FILE, JSON.stringify(events, null, 2));
+  } catch (err) {
+    console.error("Failed to save events to disk:", err);
+  }
+}
+
+function loadEventsFromDisk() {
+  try {
+    if (fs.existsSync(DB_FILE)) {
+      const data = fs.readFileSync(DB_FILE, "utf-8");
+      const loaded = JSON.parse(data);
+      Object.assign(events, loaded);
+    }
+  } catch (err) {
+    console.error("Failed to load events from disk:", err);
+  }
+
+  if (Object.keys(events).length === 0) {
+    const sampleEventId = "evt_sample";
+    const eventDir = getBulkPhotoDir(sampleEventId);
+    ensureDirExists(eventDir);
+
+    const photos: string[] = [];
+    const samplesDir = path.join(process.cwd(), "bulk_photo_samples");
+    if (fs.existsSync(samplesDir)) {
+      const sampleFiles = fs.readdirSync(samplesDir);
+      for (const file of sampleFiles) {
+        const srcPath = path.join(samplesDir, file);
+        const destPath = path.join(eventDir, file);
+        fs.copyFileSync(srcPath, destPath);
+        photos.push(`/bulk_photo/${sampleEventId}/${file}`);
+      }
+    }
+
+    events[sampleEventId] = {
+      eventId: sampleEventId,
+      folderId: "local_upload",
+      accessToken: "sample_token",
+      orgName: "Photopic Studio",
+      eventName: "Summer Celebration & Gala 2026",
+      photos,
+      coverImage: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&auto=format&fit=crop&q=80"
+    };
+
+    saveEventsToDisk();
+  }
+}
+
+loadEventsFromDisk();
+
 export const createEvent = async (req: Request, res: Response) => {
   const { eventId, folderId, accessToken, orgName, eventName, coverImage } = req.body;
   if (!eventId || !folderId || !accessToken) {
@@ -84,8 +140,10 @@ export const createEvent = async (req: Request, res: Response) => {
         driveFiles,
         coverImage
       };
+      saveEventsToDisk();
     }
 
+    saveEventsToDisk();
     res.json({ success: true });
   } catch (error: any) {
     console.error("Failed to create event:", error);
@@ -103,6 +161,7 @@ export const deleteEvent = (req: Request, res: Response) => {
     const eventDir = getBulkPhotoDir(eventId);
     removeDirSync(eventDir);
     delete events[eventId];
+    saveEventsToDisk();
     res.json({ success: true });
   } else {
     res.status(404).json({ error: "Event not found" });
@@ -143,6 +202,7 @@ export const uploadEventPhotos = (req: Request, res: Response) => {
       }
     }
 
+    saveEventsToDisk();
     res.json({ success: true, photos: event.photos });
   } catch (err: any) {
     res.status(500).json({ error: err.message || "Failed to upload photos to event" });
@@ -165,6 +225,7 @@ export const clearEventPhotos = (req: Request, res: Response) => {
       }
     }
     event.photos = [];
+    saveEventsToDisk();
     res.json({ success: true });
   } catch (err: any) {
     res.status(500).json({ error: err.message || "Failed to clear event photos" });
