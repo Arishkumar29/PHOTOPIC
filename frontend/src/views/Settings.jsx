@@ -227,7 +227,7 @@ export function Settings() {
                   </div>
                   <div>
                     <h4 className="text-base font-bold text-slate-900 dark:text-white">FaceScan Notifications</h4>
-                    <p className="text-xs text-slate-400 dark:text-zinc-500 mt-1 max-w-md">Alerts when SFace AI is done indexing new images.</p>
+                    <p className="text-xs text-slate-400 dark:text-zinc-500 mt-1 max-w-md">Alerts when AI is done indexing new images.</p>
                   </div>
                 </div>
                 

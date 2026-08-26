@@ -364,7 +364,7 @@ export function Organizer({ initialView = 'dashboard', onOpenPublicView }) {
                   Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6e2b8b] to-[#da7756] font-serif italic">{user?.displayName || 'Admin'}.</span>
                 </h2>
                 <p className="text-slate-600 dark:text-zinc-400 font-medium text-sm sm:text-base leading-relaxed">
-                  Upload galleries to Google Drive, index photos with high-accuracy SFace AI, and share QR codes with guests.
+                  Upload galleries to Google Drive, index photos with high-accuracy AI facial recognition, and share QR codes with guests.
                 </p>
               </div>
 
