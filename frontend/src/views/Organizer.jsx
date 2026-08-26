@@ -576,17 +576,24 @@ export function Organizer({ initialView = 'dashboard', onOpenPublicView }) {
 
                       {/* Type & Location */}
                       <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-zinc-400 mb-2">Event Type</label>
-                          <select
-                            value={eventType}
-                            onChange={e => setEventType(e.target.value)}
-                            className="w-full px-5 py-4 bg-white dark:bg-zinc-900/60 border-2 border-slate-200 dark:border-zinc-800/60 rounded-2xl focus:outline-none focus:border-slate-900 dark:focus:border-zinc-100 font-medium text-sm text-slate-900 dark:text-zinc-50 cursor-pointer transition-colors"
-                          >
+                        <div className="col-span-2 sm:col-span-1">
+                          <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-zinc-400 mb-2">Event Type</label>
+                          <div className="flex flex-wrap gap-1.5">
                             {['Wedding', 'Corporate', 'Concert', 'School', 'Sports', 'Other'].map(type => (
-                              <option key={type} value={type}>{type}</option>
+                              <button
+                                key={type}
+                                type="button"
+                                onClick={() => setEventType(type)}
+                                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                                  eventType === type
+                                    ? 'bg-gradient-to-r from-[#6e2b8b] to-[#da7756] text-white shadow-sm'
+                                    : 'bg-white dark:bg-zinc-900/80 border border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:border-purple-300 dark:hover:border-purple-800'
+                                }`}
+                              >
+                                {type}
+                              </button>
                             ))}
-                          </select>
+                          </div>
                         </div>
                         <div>
                           <label className="block text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-zinc-400 mb-2">Location <span className="normal-case text-slate-400">(optional)</span></label>

@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Search, Calendar, Folder, Copy, CheckCircle, ExternalLink, SlidersHorizontal, Image as ImageIcon, QrCode, Camera } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Search, Calendar, Folder, Copy, CheckCircle, ExternalLink, SlidersHorizontal, Image as ImageIcon, QrCode, Camera, ChevronDown, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import QRCode from 'react-qr-code';
 
@@ -8,12 +8,27 @@ export function MyEvents({ onSelectEvent }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeSubTab, setActiveSubTab] = useState('All');
   const [sortBy, setSortBy] = useState('Newest');
+  const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
   const [qrModalEvent, setQrModalEvent] = useState(null);
+  const sortRef = useRef(null);
 
   useEffect(() => { 
     fetchEvents(); 
   }, []);
+
+  // Close sort dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (sortRef.current && !sortRef.current.contains(e.target)) {
+        setSortDropdownOpen(false);
+      }
+    };
+    if (sortDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [sortDropdownOpen]);
 
   const fetchEvents = async () => {
     try {
@@ -50,9 +65,18 @@ export function MyEvents({ onSelectEvent }) {
     })
     .sort((a, b) => {
       if (sortBy === 'Newest') return b.eventId.localeCompare(a.eventId);
+      if (sortBy === 'Oldest') return a.eventId.localeCompare(b.eventId);
       if (sortBy === 'Name') return a.eventName.localeCompare(b.eventName);
       return 0;
     });
+
+  const sortOptions = [
+    { value: 'Newest', label: 'Newest first' },
+    { value: 'Oldest', label: 'Oldest first' },
+    { value: 'Name', label: 'By name (A–Z)' }
+  ];
+
+  const currentSortLabel = sortOptions.find(o => o.value === sortBy)?.label || 'Newest first';
 
   const subTabs = ['All', 'Live', 'Draft'];
 
@@ -93,17 +117,50 @@ export function MyEvents({ onSelectEvent }) {
             />
           </div>
 
-          {/* Sort */}
-          <div className="relative shrink-0">
-            <SlidersHorizontal className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-zinc-500 pointer-events-none" />
-            <select
-              value={sortBy}
-              onChange={e => setSortBy(e.target.value)}
-              className="appearance-none bg-white dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800 rounded-2xl pl-11 pr-8 py-3 text-sm font-medium text-slate-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-[#6e2b8b] cursor-pointer transition-colors shadow-sm"
+          {/* Custom Sort Dropdown */}
+          <div className="relative shrink-0" ref={sortRef}>
+            <button
+              onClick={() => setSortDropdownOpen(prev => !prev)}
+              className="flex items-center gap-2.5 px-4 py-3 bg-white dark:bg-zinc-900/60 hover:bg-slate-50 dark:hover:bg-zinc-800/80 border border-slate-200 dark:border-zinc-800 rounded-2xl text-sm font-semibold text-slate-800 dark:text-zinc-100 shadow-sm transition-all cursor-pointer select-none"
+              aria-expanded={sortDropdownOpen}
             >
-              <option value="Newest">Newest first</option>
-              <option value="Name">By name</option>
-            </select>
+              <SlidersHorizontal className="w-4 h-4 text-[#6e2b8b] dark:text-[#da7756]" />
+              <span>{currentSortLabel}</span>
+              <ChevronDown className={`w-3.5 h-3.5 text-slate-400 dark:text-zinc-500 transition-transform duration-200 ${sortDropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            <AnimatePresence>
+              {sortDropdownOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 6, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 4, scale: 0.96 }}
+                  transition={{ type: 'spring', bounce: 0.15, duration: 0.2 }}
+                  className="absolute right-0 mt-2 w-48 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-slate-200/80 dark:border-zinc-800 rounded-2xl shadow-xl shadow-purple-950/5 p-1.5 z-40 space-y-0.5"
+                >
+                  {sortOptions.map(option => {
+                    const isSelected = sortBy === option.value;
+                    return (
+                      <button
+                        key={option.value}
+                        onClick={() => {
+                          setSortBy(option.value);
+                          setSortDropdownOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
+                          isSelected
+                            ? 'bg-purple-50 dark:bg-purple-950/40 text-[#6e2b8b] dark:text-[#da7756]'
+                            : 'text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-800/60'
+                        }`}
+                      >
+                        <span>{option.label}</span>
+                        {isSelected && <Check className="w-3.5 h-3.5 text-[#6e2b8b] dark:text-[#da7756]" />}
+                      </button>
+                    );
+                  })}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
