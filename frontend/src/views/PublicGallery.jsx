@@ -14,7 +14,6 @@ export function PublicGallery({ eventData, onBack }) {
   const [scanError, setScanError] = useState(null);
   const [lightboxIndex, setLightboxIndex] = useState(null);
   const videoRef = useRef(null);
-  const fileInputRef = useRef(null);
 
   // Photo editing state variables
   const [isEditing, setIsEditing] = useState(false);
@@ -148,10 +147,6 @@ export function PublicGallery({ eventData, onBack }) {
 
   const startCamera = async () => {
     try {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        fileInputRef.current?.click();
-        return;
-      }
       const mediaStream = await navigator.mediaDevices.getUserMedia({ 
         video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } } 
       });
@@ -160,26 +155,9 @@ export function PublicGallery({ eventData, onBack }) {
       setMatchedPhotos(null);
       setScanError(null);
     } catch (err) {
-      console.warn('Camera access unavailable, opening upload picker fallback:', err);
-      if (fileInputRef.current) {
-        fileInputRef.current.click();
-      } else {
-        setScanError('Camera is unavailable. Please click below to upload your selfie photo.');
-      }
+      console.error('Camera error:', err);
+      setScanError('Failed to access camera. Please ensure camera permissions are enabled in your browser settings.');
     }
-  };
-
-  const handleFileUpload = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const photoDataUrl = reader.result;
-      setPhoto(photoDataUrl);
-      stopCamera();
-      findMyPhotos(photoDataUrl);
-    };
-    reader.readAsDataURL(file);
   };
 
   const capturePhoto = () => {
@@ -327,15 +305,6 @@ export function PublicGallery({ eventData, onBack }) {
               }
             `}} />
 
-            {/* Hidden file input for direct photo upload */}
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              onChange={handleFileUpload} 
-              accept="image/*" 
-              className="hidden" 
-            />
-
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center mt-6 md:mt-16 max-w-6xl mx-auto text-left">
               {/* Left Column: CTA */}
               <div className="lg:col-span-6 text-center lg:text-left space-y-6 md:space-y-8">
@@ -348,25 +317,16 @@ export function PublicGallery({ eventData, onBack }) {
                   Find your photos <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6e2b8b] to-[#da7756] font-serif italic">in seconds.</span>
                 </h1>
                 <p className="text-slate-500 dark:text-zinc-400 text-base sm:text-lg font-medium leading-relaxed max-w-lg">
-                  Take a quick selfie or upload a photo, and let our AI scan the event gallery to find every picture you appear in.
+                  Take a quick selfie and let our AI scan the event gallery to find every photo you appear in.
                 </p>
                 
-                <div className="flex flex-col sm:flex-row items-center gap-3 justify-center lg:justify-start">
-                  <button 
-                    onClick={startCamera}
-                    className="w-full sm:w-auto group relative overflow-hidden bg-gradient-to-r from-[#6e2b8b] to-[#da7756] text-white font-extrabold text-base sm:text-lg px-8 sm:px-10 py-4 sm:py-5 rounded-full hover:opacity-95 shadow-xl shadow-purple-950/25 hover:scale-[1.03] active:scale-95 transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer"
-                  >
-                    <Camera className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
-                    <span>Take Selfie</span>
-                  </button>
-
-                  <button 
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-full sm:w-auto bg-white dark:bg-zinc-800/80 hover:bg-slate-50 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-100 font-bold text-sm sm:text-base px-6 py-4 sm:py-5 rounded-full border border-slate-200 dark:border-zinc-700 shadow-md hover:scale-[1.02] active:scale-95 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    <span>Upload Photo</span>
-                  </button>
-                </div>
+                <button 
+                  onClick={startCamera}
+                  className="group relative overflow-hidden bg-gradient-to-r from-[#6e2b8b] to-[#da7756] text-white font-extrabold text-lg px-10 py-5 rounded-full hover:opacity-95 shadow-xl shadow-purple-950/25 hover:scale-[1.03] active:scale-95 transition-all duration-300 flex items-center justify-center gap-3 mx-auto lg:mx-0 cursor-pointer"
+                >
+                  <Camera className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
+                  <span>Take Selfie</span>
+                </button>
               </div>
 
               {/* Right Column: 3D Mascot Superhero AI Showcase */}
@@ -464,7 +424,7 @@ export function PublicGallery({ eventData, onBack }) {
               </div>
               
               {/* Capture button */}
-              <div className="absolute bottom-8 left-0 right-0 flex flex-col items-center justify-center gap-2">
+              <div className="absolute bottom-8 left-0 right-0 flex justify-center">
                 <button 
                   onClick={capturePhoto}
                   className="w-18 h-18 bg-white rounded-full border-4 border-[#6e2b8b]/30 shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-transform cursor-pointer"
@@ -474,15 +434,7 @@ export function PublicGallery({ eventData, onBack }) {
                 </button>
               </div>
             </div>
-            <div className="flex items-center justify-center gap-4 mt-4">
-              <p className="text-center text-slate-500 dark:text-zinc-400 font-medium text-xs">Position your face clearly in the frame</p>
-              <button 
-                onClick={() => fileInputRef.current?.click()} 
-                className="text-xs font-semibold text-[#6e2b8b] dark:text-[#da7756] hover:underline cursor-pointer"
-              >
-                Upload photo instead
-              </button>
-            </div>
+            <p className="text-center text-slate-500 dark:text-zinc-400 font-medium mt-6">Position your face clearly in the frame.</p>
           </motion.div>
         )}
 
