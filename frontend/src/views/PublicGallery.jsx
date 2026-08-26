@@ -259,17 +259,28 @@ export function PublicGallery({ eventData, onBack }) {
     );
   }
 
+  const handleLogoClick = () => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      setStream(null);
+    }
+    setPhoto(null);
+    setMatchedPhotos(null);
+    setScanError(null);
+    setIsScanning(false);
+  };
+
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950 font-sans selection:bg-slate-200 text-slate-900 dark:text-zinc-50">
       
       {/* Header — matches landing nav style exactly */}
       <header className="bg-white/80 dark:bg-zinc-900/60 backdrop-blur-xl border-b border-slate-100 dark:border-zinc-800/40 sticky top-0 z-40">
         <div className="max-w-[1400px] mx-auto px-6 h-16 flex items-center justify-between">
-          <Logo onClick={onBack} />
+          <Logo onClick={handleLogoClick} />
           <div className="flex items-center gap-6">
             <div className="text-right hidden sm:block">
-              <div className="text-sm font-semibold text-slate-900 dark:text-zinc-100">{eventData.eventName || 'Event Gallery'}</div>
-              <div className="text-xs font-medium text-slate-500 dark:text-zinc-400">by {eventData.orgName || 'Organizer'}</div>
+              <div className="text-sm font-semibold text-slate-900 dark:text-zinc-100">{activeEvent?.eventName || eventData?.eventName || 'Event Gallery'}</div>
+              <div className="text-xs font-medium text-slate-500 dark:text-zinc-400">by {activeEvent?.orgName || eventData?.orgName || 'Organizer'}</div>
             </div>
             <ThemeToggle />
           </div>
