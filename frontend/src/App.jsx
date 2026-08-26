@@ -237,41 +237,50 @@ export default function App() {
                 <AnimatePresence>
                   {dropdownOpen && (
                     <motion.div 
-                      initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                      initial={{ opacity: 0, y: 8, scale: 0.96 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                      transition={{ type: 'spring', bounce: 0.2, duration: 0.25 }}
-                      className="absolute right-0 mt-2 w-56 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl shadow-2xl py-2 z-50 text-left overflow-hidden"
+                      exit={{ opacity: 0, y: 6, scale: 0.96 }}
+                      transition={{ type: 'spring', bounce: 0.15, duration: 0.2 }}
+                      className="absolute right-0 mt-2 w-64 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-slate-200/80 dark:border-zinc-800 rounded-2xl shadow-xl shadow-purple-950/5 p-1.5 z-50 text-left"
                     >
                       {/* User Info Header */}
-                      <div className="px-4 py-2.5 border-b border-slate-100 dark:border-zinc-800/60">
-                        <p className="text-xs font-semibold text-slate-900 dark:text-zinc-100 truncate">
-                          {user?.displayName || 'Admin Organizer'}
-                        </p>
-                        <p className="text-[11px] text-slate-400 dark:text-zinc-500 truncate mt-0.5">
-                          {user?.email || 'admin@photopic.app'}
-                        </p>
-                        <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 border border-emerald-200/40 dark:border-emerald-900/40">
-                          <Shield className="w-3 h-3" />
-                          Super Admin
+                      <div className="p-3 rounded-xl bg-slate-50/80 dark:bg-zinc-800/40 mb-1 border border-slate-100/80 dark:border-zinc-800/40">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#6e2b8b] to-[#da7756] text-white flex items-center justify-center font-bold text-sm uppercase shadow-sm shrink-0">
+                            {user?.displayName ? user.displayName[0] : 'A'}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-bold text-slate-900 dark:text-zinc-50 truncate">
+                              {user?.displayName || 'Admin Organizer'}
+                            </p>
+                            <p className="text-[11px] text-slate-400 dark:text-zinc-400 truncate mt-0.5">
+                              {user?.email || 'admin@photopic.app'}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="mt-2.5 flex items-center justify-between pt-2 border-t border-slate-200/60 dark:border-zinc-700/50">
+                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                            <Shield className="w-2.5 h-2.5" /> Super Admin
+                          </span>
+                          <span className="text-[10px] font-medium text-slate-400 dark:text-zinc-500">Active</span>
                         </div>
                       </div>
 
                       {/* Menu Actions */}
-                      <div className="py-1">
+                      <div className="space-y-0.5">
                         <button 
                           onClick={() => { setActiveTab('settings'); setDropdownOpen(false); }}
-                          className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-medium hover:bg-slate-50 dark:hover:bg-zinc-800/60 transition-colors text-slate-700 dark:text-zinc-300 cursor-pointer"
+                          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:text-[#6e2b8b] dark:hover:text-[#da7756] transition-colors text-slate-700 dark:text-zinc-200 cursor-pointer"
                         >
-                          <SettingsIcon className="w-4 h-4 text-slate-400" />
+                          <SettingsIcon className="w-4 h-4 text-slate-400 group-hover:text-[#6e2b8b]" />
                           Settings
                         </button>
                         <button 
                           onClick={handleLogout}
-                          className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-semibold hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors text-red-600 dark:text-red-400 cursor-pointer border-t border-slate-100 dark:border-zinc-800/60 mt-1"
+                          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold hover:bg-red-50 dark:hover:bg-red-950/40 text-slate-600 dark:text-zinc-300 hover:text-red-600 dark:hover:text-red-400 transition-colors cursor-pointer"
                         >
-                          <LogOut className="w-4 h-4 text-red-500" />
-                          Log Out to Admin Login
+                          <LogOut className="w-4 h-4 text-slate-400 group-hover:text-red-500" />
+                          Sign Out
                         </button>
                       </div>
                     </motion.div>
