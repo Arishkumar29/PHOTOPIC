@@ -341,31 +341,21 @@ export function PublicGallery({ eventData, onBack }) {
               </div>
 
               {/* Right Column: 3D Mascot Superhero AI Showcase */}
-              <div className="lg:col-span-6 relative h-[380px] sm:h-[480px] w-full flex flex-col items-center justify-center overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-purple-50/80 via-white to-orange-50/60 dark:from-zinc-900 dark:via-zinc-900/90 dark:to-zinc-850 border border-purple-100 dark:border-zinc-800/80 p-6 sm:p-8 shadow-sm">
+              <div className="lg:col-span-6 relative h-[400px] sm:h-[500px] w-full flex flex-col items-center justify-center overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-purple-50/80 via-white to-orange-50/60 dark:from-zinc-900 dark:via-zinc-900/90 dark:to-zinc-850 border border-purple-100 dark:border-zinc-800/80 p-6 sm:p-8 shadow-sm">
                 {/* Soft ambient gradient orb */}
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(110,43,139,0.08)_0%,transparent_70%)] pointer-events-none" />
-                <div className="absolute top-0 right-0 w-72 h-72 bg-[#6e2b8b]/15 rounded-full blur-3xl pointer-events-none" />
-                <div className="absolute bottom-0 left-0 w-72 h-72 bg-[#da7756]/15 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute top-0 right-0 w-80 h-80 bg-[#6e2b8b]/15 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#da7756]/15 rounded-full blur-3xl pointer-events-none" />
 
-                {/* Flying Rocket Mascot */}
-                <div className="relative z-10 flex flex-col items-center justify-center">
+                {/* Flying Rocket Mascot — Large & Clean */}
+                <div className="relative z-10 flex flex-col items-center justify-center w-full h-full">
                   <motion.img 
                     src="/mascot_rocket.png" 
-                    alt="AI Powered Speed Sync" 
-                    animate={{ y: [0, -12, 0], rotate: [0, 1.5, 0] }}
+                    alt="GWC AI Mascot" 
+                    animate={{ y: [0, -14, 0], rotate: [0, 1.5, 0] }}
                     transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
-                    className="w-56 sm:w-64 md:w-72 max-h-[300px] h-auto object-contain drop-shadow-[0_20px_35px_rgba(110,43,139,0.22)] select-none pointer-events-none"
+                    className="w-72 sm:w-84 md:w-96 lg:w-[420px] max-h-[400px] sm:max-h-[450px] h-auto object-contain drop-shadow-[0_25px_40px_rgba(110,43,139,0.25)] select-none pointer-events-none"
                   />
-
-                  {/* Feature Badges floating below mascot */}
-                  <div className="mt-4 flex flex-wrap items-center justify-center gap-2 relative z-10">
-                    <span className="px-3.5 py-1.5 rounded-full bg-white/90 dark:bg-zinc-800/90 text-slate-800 dark:text-zinc-200 text-xs font-bold shadow-sm border border-purple-100 dark:border-zinc-700 flex items-center gap-1.5 select-none">
-                      <Sparkles className="w-3.5 h-3.5 text-[#da7756]" /> 99.8% SFace Accuracy
-                    </span>
-                    <span className="px-3.5 py-1.5 rounded-full bg-purple-100/80 dark:bg-purple-950/60 text-[#6e2b8b] dark:text-[#da7756] text-xs font-bold shadow-sm border border-purple-200/60 select-none">
-                      ⚡ 0.4s Instant Discovery
-                    </span>
-                  </div>
                 </div>
               </div>
             </div>
